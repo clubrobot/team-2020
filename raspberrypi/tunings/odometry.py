@@ -14,7 +14,7 @@
 #   Il est également nécessaire d'avoir une approximation des valeurs pour débuter le programme
 
 
-from robots.setup_wheeledbase import *
+from setups.setup_wheeledbase import *
 import time
 import math
 import argparse

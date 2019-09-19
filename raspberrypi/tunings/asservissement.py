@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
-from robots.setup_wheeledbase import *
+from setups.setup_wheeledbase import *
 from asserv_points import *
 import time
 import math

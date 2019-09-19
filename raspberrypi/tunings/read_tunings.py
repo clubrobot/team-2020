@@ -1,4 +1,4 @@
-from robots.setup_wheeledbase import *
+from setups.setup_wheeledbase import *
 
 print("------------------------------ Stored constant on the robot ----------------------------------")
 
