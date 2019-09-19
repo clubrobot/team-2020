@@ -129,7 +129,8 @@ class RoadMap:
             source = self.graph.vs[edge.source]['coords']
             target = self.graph.vs[edge.target]['coords']
             for i in range(len(obstacle_shape)):
-                cutline = (obstacle_shape[i], obstacle_shape[(i + 1) % len(obstacle_shape)])
+                cutline = (obstacle_shape[i], obstacle_shape[(
+                    i + 1) % len(obstacle_shape)])
                 if intersect((source, target), cutline):
                     edge['weight'] = math.inf
                     if not obstacle in edge['cuted_by']:
@@ -169,7 +170,8 @@ class RoadMap:
         vid = self.graph.vcount() - 1
         self.graph.vs[vid]['coords'] = vertex
         for target in neighbors:
-            self.graph.add_edge(vid, target, weight=self.get_vertex_distance(target, vertex),cuted_by=list())
+            self.graph.add_edge(vid, target, weight=self.get_vertex_distance(
+                target, vertex), cuted_by=list())
         return vid
 
     def best_side(self, x, y, theta):
@@ -177,7 +179,8 @@ class RoadMap:
         for (a, b) in self.graph.vs['coords']:
             a -= x
             b -= y
-            result += math.copysign(1, -math.sin(theta) * a + math.cos(theta) * b)
+            result += math.copysign(1, -math.sin(theta)
+                                    * a + math.cos(theta) * b)
         return math.copysign(1, result)
 
     def get_shortest_path(self, source, target):

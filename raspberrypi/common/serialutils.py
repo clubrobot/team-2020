@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 This library is free software from Club robot Insa Rennes sources; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -14,7 +14,9 @@ import struct
 from threading import RLock
 import warnings
 
-class SerialBufferTimeout(UserWarning, TimeoutError): pass
+
+class SerialBufferTimeout(UserWarning, TimeoutError):
+    pass
 
 
 class SerialBuffer:
@@ -27,14 +29,16 @@ class SerialBuffer:
 
     def send(self, bytes, timeout=1):
         if not self.lock.acquire(blocking=True, timeout=timeout):
-            warnings.warn("Bytes : {} can't be sended, timeout !".format(bytes), SerialBufferTimeout)
+            warnings.warn("Bytes : {} can't be sended, timeout !".format(
+                bytes), SerialBufferTimeout)
             return 0
         if self.bytes_sended >= self.buffer_size:
             self.stack_bytes += bytes
             res = 0
         else:
-            to_send, to_store = bytearray(bytes)[:min(self.buffer_size-self.bytes_sended,len(bytes))], bytearray(bytes)[min(self.buffer_size-self.bytes_sended,len(bytes)):]
-            self.stack_bytes+=to_store
+            to_send, to_store = bytearray(bytes)[:min(self.buffer_size-self.bytes_sended, len(
+                bytes))], bytearray(bytes)[min(self.buffer_size-self.bytes_sended, len(bytes)):]
+            self.stack_bytes += to_store
             self.bytes_sended += len(to_send)
             res = self.rawsend(to_send)
         self.lock.release()
@@ -42,7 +46,8 @@ class SerialBuffer:
 
     def direct_send(self, bytes, timeout=1):
         if not self.lock.acquire(blocking=True, timeout=timeout):
-            warnings.warn("Bytes : {} can't be sended, timeout !".format(bytes), SerialBufferTimeout)
+            warnings.warn("Bytes : {} can't be sended, timeout !".format(
+                bytes), SerialBufferTimeout)
             raise TimeoutError()
             return 0
         res = self.rawsend(bytes)
@@ -57,7 +62,6 @@ class SerialBuffer:
         self.lock.release()
 
 
-
 class AbstractType:
 
     def __call__(self, value):
@@ -67,21 +71,21 @@ class AbstractType:
 class IntegerType(AbstractType):
 
     def __init__(self, length, byteorder, signed):
-        self.length    = length
+        self.length = length
         self.byteorder = byteorder
-        self.signed    = signed
+        self.signed = signed
 
     def to_bytes(self, integer):
-        return int.to_bytes(integer, length = self.length, byteorder = self.byteorder, signed = self.signed)
+        return int.to_bytes(integer, length=self.length, byteorder=self.byteorder, signed=self.signed)
 
     def from_bytes(self, rawbytes):
-        return int.from_bytes(rawbytes[:self.length], byteorder = self.byteorder, signed = self.signed)
+        return int.from_bytes(rawbytes[:self.length], byteorder=self.byteorder, signed=self.signed)
 
 
 class FloatType(AbstractType):
 
     def __init__(self, standard):
-        self.standard = standard # May be 'f' (float) or 'd' (double)
+        self.standard = standard  # May be 'f' (float) or 'd' (double)
 
     def to_bytes(self, real):
         return struct.pack(self.standard, real)
@@ -116,7 +120,7 @@ class Deserializer:
         output = list()
 
         for T in types:
-            data   = T.from_bytes(self.remaining)
+            data = T.from_bytes(self.remaining)
             length = len(T.to_bytes(data))
             output.append(data)
             self.remaining = self.remaining[length:]
@@ -127,22 +131,22 @@ class Deserializer:
 if __name__ == '__main__':
     from pprint import pprint
 
-    char_t   = IntegerType(1, 'little', True)
-    byte_t   = IntegerType(1, 'little', False)
-    int_t    = IntegerType(2, 'little', True)
-    uint_t   = IntegerType(4, 'little', False)
+    char_t = IntegerType(1, 'little', True)
+    byte_t = IntegerType(1, 'little', False)
+    int_t = IntegerType(2, 'little', True)
+    uint_t = IntegerType(4, 'little', False)
     string_t = StringType('utf-8')
-    float_t  = FloatType('f')
+    float_t = FloatType('f')
 
-    out = Deserializer(byte_t  (10) +
-                       char_t  (ord('X')) +
-                       uint_t  (123456) +
-                       int_t   (-789) +
+    out = Deserializer(byte_t(10) +
+                       char_t(ord('X')) +
+                       uint_t(123456) +
+                       int_t(-789) +
                        string_t('hello') +
-                       float_t (987.654))
+                       float_t(987.654))
 
     b, c, u, i = out.read(byte_t, char_t, uint_t, int_t)
-    s, f       = out.read(string_t, float_t)
+    s, f = out.read(string_t, float_t)
 
     print(b, c, u, i, s, f, len(out.remaining))
     print(char_t(82))

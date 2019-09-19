@@ -59,13 +59,14 @@ class LightButton(Device):
                 GPIO.setmode(GPIO.BCM)
             GPIO.setup(self.input_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             GPIO.setup(self.light_pin, GPIO.OUT)
-            GPIO.add_event_detect(self.input_pin, GPIO.FALLING, callback=self.launch_function, bouncetime=500)
+            GPIO.add_event_detect(
+                self.input_pin, GPIO.FALLING, callback=self.launch_function, bouncetime=500)
         else:
             raise RuntimeError('pin already in use')
 
     def launch_function(self, *args):
         if self.function:
-            self.function(*self.args,**self.kwargs)
+            self.function(*self.args, **self.kwargs)
 
         if self.auto_switch:
             self.switch()

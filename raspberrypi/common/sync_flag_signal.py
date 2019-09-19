@@ -15,19 +15,20 @@ class Flag:
         self.linked_signals.append(signal)
         signal._bind(self)
         self.lock.release()
-    
+
     def attach(self, function):
         self.lock.acquire()
         self.target = function
         self.lock.release()
-        
+
     def ping(self):
-    
-        if not self.lock.acquire(timeout=0.2) : return
+
+        if not self.lock.acquire(timeout=0.2):
+            return
         self.target()
-        #try:
+        # try:
         #    self.target()
-        #except Exception:
+        # except Exception:
         #    _, value, _ = exc_info()
         #    print("UserWarning : Error on the frags execution : {}".format(value))
         self.lock.release()
@@ -41,13 +42,14 @@ class Flag:
 
 
 class Signal:
-    def __init__(self):    
+    def __init__(self):
         self.linked_flags = list()
-        self.lock  = RLock()
+        self.lock = RLock()
         self.clear_lock = RLock()
 
     def ping(self):
-        if not self.lock.acquire(blocking=False) : return
+        if not self.lock.acquire(blocking=False):
+            return
         thread_list = list()
         self.clear_lock.acquire()
         for flag in self.linked_flags:
@@ -58,18 +60,16 @@ class Signal:
         while status:
             status = False
             for thread in thread_list:
-                status =  thread.is_alive() and status
-            
+                status = thread.is_alive() and status
+
         self.lock.release()
 
     def _bind(self, flag):
         self.clear_lock.acquire()
         self.linked_flags.append(flag)
         self.clear_lock.release()
-    
+
     def clear(self, flag):
         self.clear_lock.acquire()
         self.linked_flags.remove(flag)
         self.clear_lock.release()
-
-
