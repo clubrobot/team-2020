@@ -8,19 +8,19 @@ COMMON = ../common
 LOCAL_INO_SRCS = wheeledbase.ino
 LOCAL_CPP_SRCS = \
 	instructions.cpp \
-	$(COMMON)/SerialTalks \
-	$(COMMON)/CRC16 \
-	$(COMMON)/DCMotor \
-	$(COMMON)/Codewheel \
-	$(COMMON)/PeriodicProcess \
-	$(COMMON)/Odometry \
-	$(COMMON)/PID \
-	$(COMMON)/DifferentialController \
-	$(COMMON)/VelocityController \
-	$(COMMON)/PositionController \
-	$(COMMON)/PurePursuit \
-	$(COMMON)/TurnOnTheSpot \
-	$(COMMON)/mathutils
+	$(COMMON)/SerialTalks.cpp \
+	$(COMMON)/CRC16.cpp \
+	$(COMMON)/DCMotor.cpp \
+	$(COMMON)/Codewheel.cpp \
+	$(COMMON)/PeriodicProcess.cpp \
+	$(COMMON)/Odometry.cpp \
+	$(COMMON)/PID.cpp \
+	$(COMMON)/DifferentialController.cpp \
+	$(COMMON)/VelocityController.cpp \
+	$(COMMON)/PositionController.cpp \
+	$(COMMON)/PurePursuit.cpp \
+	$(COMMON)/TurnOnTheSpot.cpp \
+	$(COMMON)/mathutils.cpp
 
 # Define
 CPPFLAGS += -DPUREPURSUIT_MAX_WAYPOINTS=32

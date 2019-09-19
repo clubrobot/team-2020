@@ -1,21 +1,20 @@
 #include <Arduino.h>
 
-#include <SerialTalks.h>
-#include <DCMotor.h>
-#include <Codewheel.h>
-#include <Odometry.h>
-#include <PID.h>
-#include <VelocityController.h>
-#include <PositionController.h>
-#include <PurePursuit.h>
-#include <TurnOnTheSpot.h>
-#include <mathutils.h>
-#include <TaskManager.h>
-
 #include "PIN.h"
 #include "constants.h"
 #include "instructions.h"
 #include "addresses.h"
+
+#include "../common/SerialTalks.h"
+#include "../common/DCMotor.h"
+#include "../common/Codewheel.h"
+#include "../common/Odometry.h"
+#include "../common/PID.h"
+#include "../common/VelocityController.h"
+#include "../common/PositionController.h"
+#include "../common/PurePursuit.h"
+#include "../common/TurnOnTheSpot.h"
+#include "../common/mathutils.h"
 
 // Load the different modules
 
@@ -38,7 +37,7 @@ PID angVelPID;
 
 PositionController positionControl;
 
-PurePursuit purePursuit;
+PurePursuit   purePursuit;
 TurnOnTheSpot turnOnTheSpot;
 
 // Setup
@@ -63,7 +62,7 @@ void setup()
 	talks.bind(GET_PARAMETER_VALUE_OPCODE, GET_PARAMETER_VALUE);
 	talks.bind(RESET_PARAMETERS_OPCODE, RESET_PARAMETERS);
 	talks.bind(GET_VELOCITIES_WANTED_OPCODE, GET_VELOCITIES_WANTED);
-	talks.bind(GOTO_DELTA_OPCODE, GOTO_DELTA);
+	talks.bind(GOTO_DELTA_OPCODE,GOTO_DELTA);
 	talks.bind(SERIALTALKS_DISCONNECT_OPCODE, DISABLE);
 	talks.bind(RESET_PARAMETERS_OPCODE, RESET_PARAMETERS);
 	talks.bind(SAVE_PARAMETERS_OPCODE, SAVE_PARAMETERS);
@@ -72,19 +71,19 @@ void setup()
 	driver.attach(DRIVER_RESET, DRIVER_FAULT);
 	driver.reset();
 
-	leftWheel.attach(LEFT_MOTOR_EN, LEFT_MOTOR_PWM, LEFT_MOTOR_DIR);
+	leftWheel .attach(LEFT_MOTOR_EN,  LEFT_MOTOR_PWM,  LEFT_MOTOR_DIR);
 	rightWheel.attach(RIGHT_MOTOR_EN, RIGHT_MOTOR_PWM, RIGHT_MOTOR_DIR);
-	leftWheel.load(LEFTWHEEL_ADDRESS);
+	leftWheel .load(LEFTWHEEL_ADDRESS);
 	rightWheel.load(RIGHTWHEEL_ADDRESS);
 
 	// Codewheels
-	leftCodewheel.attachCounter(QUAD_COUNTER_XY, QUAD_COUNTER_Y_AXIS, QUAD_COUNTER_SEL1, QUAD_COUNTER_SEL2, QUAD_COUNTER_OE, QUAD_COUNTER_RST_Y);
+	leftCodewheel .attachCounter(QUAD_COUNTER_XY, QUAD_COUNTER_Y_AXIS, QUAD_COUNTER_SEL1, QUAD_COUNTER_SEL2, QUAD_COUNTER_OE, QUAD_COUNTER_RST_Y);
 	rightCodewheel.attachCounter(QUAD_COUNTER_XY, QUAD_COUNTER_X_AXIS, QUAD_COUNTER_SEL1, QUAD_COUNTER_SEL2, QUAD_COUNTER_OE, QUAD_COUNTER_RST_X);
-	leftCodewheel.attachRegister(SHIFT_REG_DATA, SHIFT_REG_LATCH, SHIFT_REG_CLOCK);
+	leftCodewheel .attachRegister(SHIFT_REG_DATA, SHIFT_REG_LATCH, SHIFT_REG_CLOCK);
 	rightCodewheel.attachRegister(SHIFT_REG_DATA, SHIFT_REG_LATCH, SHIFT_REG_CLOCK);
-	leftCodewheel.load(LEFTCODEWHEEL_ADDRESS);
+	leftCodewheel .load(LEFTCODEWHEEL_ADDRESS);
 	rightCodewheel.load(RIGHTCODEWHEEL_ADDRESS);
-	leftCodewheel.reset();
+	leftCodewheel .reset();
 	rightCodewheel.reset();
 
 	// Odometry
@@ -126,7 +125,7 @@ void setup()
 // Loop
 
 void loop()
-{
+{	
 	talks.execute();
 
 	// Update odometry
