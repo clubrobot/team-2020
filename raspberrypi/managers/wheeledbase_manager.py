@@ -1,4 +1,4 @@
-from robots.sensors_manager import *
+from managers.sensors_manager import *
 from math import copysign, hypot, pi, cos, sin, inf, isclose
 from common.sync_flag_signal import Flag
 from time import sleep

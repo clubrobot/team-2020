@@ -5,7 +5,7 @@ import time
 from threading import Thread, Event, Lock
 import math
 from common.sync_flag_signal import Signal
-from robots.automaton import *
+from common.automaton import *
 
 
 class SensorListener(Thread):

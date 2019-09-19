@@ -1,5 +1,5 @@
-from robots.setup_display import *
-from robots.automaton import Automaton
+from setups.setup_display import *
+from common.automaton import Automaton
 from common.components import LightButtonProxy, SwitchProxy
 from threading import Semaphore
 
