@@ -1,7 +1,7 @@
 #ifndef __INSTRUCTIONS_H__
 #define __INSTRUCTIONS_H__
 
-#include "../common/SerialTalks.h"
+#include <SerialTalks.h>
 
 // Opcodes declaration
 

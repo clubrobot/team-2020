@@ -8,21 +8,21 @@ BOARD_UUID = wheeledbase
 COMMON = ../common
 #Setup all libs used !
 LIBS =  $(ESP_LIBS)/EEPROM \
-		$(COMMON)/SerialTalks.cpp \
-		$(COMMON)/CRC16.cpp \
-		$(COMMON)/mathutils.cpp\
-		$(COMMON)/DCMotor.cpp \
-		$(COMMON)/Codewheel.cpp \
-		$(COMMON)/PeriodicProcess.cpp \
-		$(COMMON)/Odometry.cpp \
-		$(COMMON)/PID.cpp \
-		$(COMMON)/DifferentialController.cpp \
-		$(COMMON)/VelocityController.cpp \
-		$(COMMON)/PositionController.cpp \
-		$(COMMON)/PurePursuit.cpp \
-		$(COMMON)/TurnOnTheSpot.cpp \
-		$(COMMON)/mathutils.cpp \
-		$(COMMON)/TaskManager.cpp\
+		$(COMMON)/SerialTalks \
+		$(COMMON)/CRC16 \
+		$(COMMON)/mathutils\
+		$(COMMON)/DCMotor \
+		$(COMMON)/Codewheel \
+		$(COMMON)/PeriodicProcess \
+		$(COMMON)/Odometry \
+		$(COMMON)/PID \
+		$(COMMON)/DifferentialController \
+		$(COMMON)/VelocityController \
+		$(COMMON)/PositionController \
+		$(COMMON)/PurePursuit \
+		$(COMMON)/TurnOnTheSpot \
+		$(COMMON)/mathutils \
+		$(COMMON)/TaskManager \
 		instructions.cpp
 # Define
 CPPFLAGS += -DSERIALTALKS_MAX_OPCODE=0x30

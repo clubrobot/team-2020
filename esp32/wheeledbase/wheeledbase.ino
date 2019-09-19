@@ -1,21 +1,21 @@
 #include <Arduino.h>
 
+#include <SerialTalks.h>
+#include <DCMotor.h>
+#include <Codewheel.h>
+#include <Odometry.h>
+#include <PID.h>
+#include <VelocityController.h>
+#include <PositionController.h>
+#include <PurePursuit.h>
+#include <TurnOnTheSpot.h>
+#include <mathutils.h>
+#include <TaskManager.h>
+
 #include "PIN.h"
 #include "constants.h"
 #include "instructions.h"
 #include "addresses.h"
-
-#include "../common/SerialTalks.h"
-#include "../common/DCMotor.h"
-#include "../common/Codewheel.h"
-#include "../common/Odometry.h"
-#include "../common/PID.h"
-#include "../common/VelocityController.h"
-#include "../common/PositionController.h"
-#include "../common/PurePursuit.h"
-#include "../common/TurnOnTheSpot.h"
-#include "../common/mathutils.h"
-#include "../common/TaskManager.h"
 
 // Load the different modules
 
