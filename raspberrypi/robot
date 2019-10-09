@@ -6,7 +6,6 @@ from argparse import ArgumentParser
 from common.serialtalks import *
 from common.tcptalks import ForeverAloneError
 from common.components import Manager, Server
-from robots.automaton import *
 from daughter_cards.display import SevenSegments
 import os
 
