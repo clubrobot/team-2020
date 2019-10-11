@@ -14,14 +14,16 @@ public:
 
     bool begin();
 
+    VL53L0X_Error getRangingMeasurement(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
+
+private:
     VL53L0X_Error getSingleRangingMeasurement(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
     VL53L0X_Error getContinuousRangingMeasurement(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
 
-private:
+    VL53L0X_Error WaitMeasurementDataReady(VL53L0X_DEV Dev);
+
     bool setAddress(uint8_t newAddr, uint8_t shutdown_pin);
     void printRangeStatus(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
-
-    VL53L0X_Error _status = VL53L0X_ERROR_NONE;
 
     VL53L0X_Dev_t _device;
     VL53L0X_Version_t _version;
