@@ -21,11 +21,11 @@ private:
     bool setAddress(uint8_t newAddr, uint8_t shutdown_pin);
     void printRangeStatus(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
 
-    VL53L0X_Error _Status = VL53L0X_ERROR_NONE;
+    VL53L0X_Error _status = VL53L0X_ERROR_NONE;
 
-    VL53L0X_Dev_t MyDevice;
-    VL53L0X_Version_t Version;
-    VL53L0X_DeviceInfo_t DeviceInfo;
+    VL53L0X_Dev_t _device;
+    VL53L0X_Version_t _version;
+    VL53L0X_DeviceInfo_t _deviceInfo;
 
     uint8_t _i2c_addr;
     uint8_t _shutdown_pin;
