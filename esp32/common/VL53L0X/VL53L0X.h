@@ -15,9 +15,11 @@ public:
     bool begin();
 
     VL53L0X_Error getSingleRangingMeasurement(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
+    VL53L0X_Error getContinuousRangingMeasurement(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
 
 private:
     bool setAddress(uint8_t newAddr, uint8_t shutdown_pin);
+    void printRangeStatus(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData);
 
     VL53L0X_Error _Status = VL53L0X_ERROR_NONE;
 

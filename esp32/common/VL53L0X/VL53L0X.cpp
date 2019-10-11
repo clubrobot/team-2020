@@ -45,6 +45,7 @@ bool VL53L0X::begin()
 
     _Status = VL53L0X_GetDeviceInfo(&MyDevice, &DeviceInfo);
 
+#ifdef VL53L0X_LOG
     if (_Status == VL53L0X_ERROR_NONE)
     {
         cout << "VL53L0X Info:" << endl;
@@ -64,35 +65,41 @@ bool VL53L0X::begin()
 
         _Status = VL53L0X_ERROR_NOT_SUPPORTED;
     }
+#endif
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
+#ifdef VL53L0X_LOG
         cout << "VL53L0X: StaticInit" << endl;
-
+#endif
         _Status = VL53L0X_StaticInit(pMyDevice); // Device Initialization
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
+#ifdef VL53L0X_LOG
         cout << "VL53L0X: PerformRefSpadManagement" << endl;
-
+#endif
         _Status = VL53L0X_PerformRefSpadManagement(pMyDevice, &refSpadCount, &isApertureSpads); // Device Initialization
-
+#ifdef VL53L0X_LOG
         cout << "refSpadCount = " << refSpadCount;
         cout << ", isApertureSpads = " << isApertureSpads << endl;
+#endif
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
+#ifdef VL53L0X_LOG
         cout << "VL53L0X: PerformRefCalibration" << endl;
-
+#endif
         _Status = VL53L0X_PerformRefCalibration(pMyDevice, &VhvSettings, &PhaseCal); // Device Initialization
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
+#ifdef VL53L0X_LOG
         cout << "VL53L0X: SetDeviceMode" << endl;
-
+#endif
         _Status = VL53L0X_SetDeviceMode(pMyDevice, _device_mode);
     }
 
@@ -123,18 +130,13 @@ bool VL53L0X::begin()
     }
     else
     {
+#ifdef VL53L0X_LOG
         cout << "VL53L0X Error: " << _Status << endl;
+#endif
         return false;
     }
 }
 
-/**************************************************************************/
-/*!
-    @brief  Change the I2C address of the sensor
-    @param  newAddr the new address to set the sensor to
-    @returns True if address was set successfully, False otherwise
-*/
-/**************************************************************************/
 boolean VL53L0X::setAddress(uint8_t newAddr, uint8_t shutdown_pin)
 {
     newAddr &= 0x7F;
@@ -153,4 +155,51 @@ boolean VL53L0X::setAddress(uint8_t newAddr, uint8_t shutdown_pin)
         return true;
     }
     return false;
+}
+
+VL53L0X_Error VL53L0X::getSingleRangingMeasurement(VL53L0X_RangingMeasurementData_t *RangingMeasurementData)
+{
+    VL53L0X_Error Status = VL53L0X_ERROR_NONE;
+    FixPoint1616_t LimitCheckCurrent;
+
+    /*
+     *  Step  4 : Test ranging mode
+     */
+
+    if (Status == VL53L0X_ERROR_NONE)
+    {
+#ifdef VL53L0X_LOG
+        Serial.println(F("sVL53L0X: PerformSingleRangingMeasurement"));
+#endif
+        Status = VL53L0X_PerformSingleRangingMeasurement(pMyDevice, RangingMeasurementData);
+
+#ifdef VL53L0X_LOG
+        printRangeStatus(RangingMeasurementData);
+
+        VL53L0X_GetLimitCheckCurrent(pMyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, &LimitCheckCurrent);
+
+        Serial.print(F("RANGE IGNORE THRESHOLD: "));
+        Serial.println((float)LimitCheckCurrent / 65536.0);
+
+        Serial.print(F("Measured distance: "));
+        Serial.println(RangingMeasurementData->RangeMilliMeter);
+#endif
+    }
+    return Status;
+}
+
+void VL53L0X::printRangeStatus(VL53L0X_RangingMeasurementData_t *pRangingMeasurementData)
+{
+    char buf[VL53L0X_MAX_STRING_LENGTH];
+    uint8_t RangeStatus;
+
+    /*
+     * New Range Status: data is valid when pRangingMeasurementData->RangeStatus = 0
+     */
+
+    RangeStatus = pRangingMeasurementData->RangeStatus;
+
+    VL53L0X_GetRangeStatusString(RangeStatus, buf);
+
+    cout << "Range Status: " << RangeStatus << " : " << buf << endl;
 }
