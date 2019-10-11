@@ -10,7 +10,7 @@
 class VL53L0X
 {
 public:
-    VL53L0X(uint8_t i2c_addr = VL53L0X_I2C_ADDR, uint8_t shutdown_pin = NULL, uint8_t device_mode = VL53L0X_DEVICEMODE_SINGLE_RANGING);
+    VL53L0X(TwoWire &i2c, uint8_t i2c_addr = VL53L0X_I2C_ADDR, uint8_t shutdown_pin = NULL, uint8_t device_mode = VL53L0X_DEVICEMODE_SINGLE_RANGING);
 
     bool begin();
 
@@ -24,9 +24,7 @@ private:
     VL53L0X_Error _Status = VL53L0X_ERROR_NONE;
 
     VL53L0X_Dev_t MyDevice;
-    VL53L0X_Dev_t *pMyDevice = &MyDevice;
     VL53L0X_Version_t Version;
-    VL53L0X_Version_t *pVersion = &Version;
     VL53L0X_DeviceInfo_t DeviceInfo;
 
     uint8_t _i2c_addr;

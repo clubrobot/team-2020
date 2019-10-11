@@ -10,8 +10,15 @@ using namespace std;
 #define STR_HELPER(x) #x     ///< a string helper
 #define STR(x) STR_HELPER(x) ///< string helper wrapper
 
-VL53L0X::VL53L0X(uint8_t i2c_addr, uint8_t shutdown_pin, uint8_t device_mode)
+VL53L0X::VL53L0X(TwoWire &i2c, uint8_t i2c_addr, uint8_t shutdown_pin, uint8_t device_mode)
 {
+
+    // Initialize Comms
+    MyDevice.I2cDevAddr = VL53L0X_I2C_ADDR; // default
+    MyDevice.comms_type = 1;
+    MyDevice.comms_speed_khz = 400;
+    MyDevice.i2c = &i2c;
+
     _i2c_addr = i2c_addr;
     _shutdown_pin = shutdown_pin;
     _device_mode = device_mode;
@@ -30,11 +37,6 @@ bool VL53L0X::begin()
     uint8_t isApertureSpads;
     uint8_t VhvSettings;
     uint8_t PhaseCal;
-
-    // Initialize Comms
-    pMyDevice->I2cDevAddr = VL53L0X_I2C_ADDR; // default
-    pMyDevice->comms_type = 1;
-    pMyDevice->comms_speed_khz = 400;
 
     _Status = VL53L0X_DataInit(&MyDevice); // Data initialization
 
@@ -72,7 +74,7 @@ bool VL53L0X::begin()
 #ifdef VL53L0X_LOG
         cout << "VL53L0X: StaticInit" << endl;
 #endif
-        _Status = VL53L0X_StaticInit(pMyDevice); // Device Initialization
+        _Status = VL53L0X_StaticInit(&MyDevice); // Device Initialization
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
@@ -80,7 +82,7 @@ bool VL53L0X::begin()
 #ifdef VL53L0X_LOG
         cout << "VL53L0X: PerformRefSpadManagement" << endl;
 #endif
-        _Status = VL53L0X_PerformRefSpadManagement(pMyDevice, &refSpadCount, &isApertureSpads); // Device Initialization
+        _Status = VL53L0X_PerformRefSpadManagement(&MyDevice, &refSpadCount, &isApertureSpads); // Device Initialization
 #ifdef VL53L0X_LOG
         cout << "refSpadCount = " << refSpadCount;
         cout << ", isApertureSpads = " << isApertureSpads << endl;
@@ -92,7 +94,7 @@ bool VL53L0X::begin()
 #ifdef VL53L0X_LOG
         cout << "VL53L0X: PerformRefCalibration" << endl;
 #endif
-        _Status = VL53L0X_PerformRefCalibration(pMyDevice, &VhvSettings, &PhaseCal); // Device Initialization
+        _Status = VL53L0X_PerformRefCalibration(&MyDevice, &VhvSettings, &PhaseCal); // Device Initialization
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
@@ -100,28 +102,28 @@ bool VL53L0X::begin()
 #ifdef VL53L0X_LOG
         cout << "VL53L0X: SetDeviceMode" << endl;
 #endif
-        _Status = VL53L0X_SetDeviceMode(pMyDevice, _device_mode);
+        _Status = VL53L0X_SetDeviceMode(&MyDevice, _device_mode);
     }
 
     // Enable/Disable Sigma and Signal check
     if (_Status == VL53L0X_ERROR_NONE)
     {
-        _Status = VL53L0X_SetLimitCheckEnable(pMyDevice, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
+        _Status = VL53L0X_SetLimitCheckEnable(&MyDevice, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1);
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
-        _Status = VL53L0X_SetLimitCheckEnable(pMyDevice, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
+        _Status = VL53L0X_SetLimitCheckEnable(&MyDevice, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1);
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
-        _Status = VL53L0X_SetLimitCheckEnable(pMyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, 1);
+        _Status = VL53L0X_SetLimitCheckEnable(&MyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, 1);
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
-        _Status = VL53L0X_SetLimitCheckValue(pMyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, (FixPoint1616_t)(1.5 * 0.023 * 65536));
+        _Status = VL53L0X_SetLimitCheckValue(&MyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, (FixPoint1616_t)(1.5 * 0.023 * 65536));
     }
 
     if (_Status == VL53L0X_ERROR_NONE)
@@ -145,13 +147,13 @@ boolean VL53L0X::setAddress(uint8_t newAddr, uint8_t shutdown_pin)
     pinMode(shutdown_pin, INPUT);
     delay(2); // Not ideal but we need to wait for the sensors to boot
 
-    _Status = VL53L0X_SetDeviceAddress(pMyDevice, newAddr * 2); // 7->8 bit
+    _Status = VL53L0X_SetDeviceAddress(&MyDevice, newAddr * 2); // 7->8 bit
 
     delay(10);
 
     if (_Status == VL53L0X_ERROR_NONE)
     {
-        pMyDevice->I2cDevAddr = newAddr; // 7 bit addr
+        MyDevice.I2cDevAddr = newAddr; // 7 bit addr
         return true;
     }
     return false;
@@ -171,12 +173,12 @@ VL53L0X_Error VL53L0X::getSingleRangingMeasurement(VL53L0X_RangingMeasurementDat
 #ifdef VL53L0X_LOG
         Serial.println(F("sVL53L0X: PerformSingleRangingMeasurement"));
 #endif
-        Status = VL53L0X_PerformSingleRangingMeasurement(pMyDevice, RangingMeasurementData);
+        Status = VL53L0X_PerformSingleRangingMeasurement(&MyDevice, RangingMeasurementData);
 
 #ifdef VL53L0X_LOG
         printRangeStatus(RangingMeasurementData);
 
-        VL53L0X_GetLimitCheckCurrent(pMyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, &LimitCheckCurrent);
+        VL53L0X_GetLimitCheckCurrent(&MyDevice, VL53L0X_CHECKENABLE_RANGE_IGNORE_THRESHOLD, &LimitCheckCurrent);
 
         Serial.print(F("RANGE IGNORE THRESHOLD: "));
         Serial.println((float)LimitCheckCurrent / 65536.0);
