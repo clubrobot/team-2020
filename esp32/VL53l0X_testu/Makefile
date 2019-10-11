@@ -11,12 +11,15 @@ LIBS = 	$(ESP_LIBS)/EEPROM \
 		$(ESP_LIBS)/WIRE \
 		$(COMMON)/SerialTalks \
 		$(COMMON)/CRC16 \
+		$(COMMON)/TaskManager \
 		$(COMMON)/VL53L0X
 
 
 CPPFLAGS = -fexceptions
 CPPFLAGS += -DCONFIG_CXX_EXCEPTIONS=1
 CPPFLAGS += -DSERIALTALKS_MAX_OPCODE=0x30
+CPPFLAGS += -DVL53L0X_LOG
+CPPFLAGS += -DUSE_I2C_2V8
 # Congratulations! You made a pretty Makefile :)
 # Now let the grown-ups do the hard work :D
 MODULEMK_DIR = ..
