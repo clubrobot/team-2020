@@ -31,9 +31,13 @@ VL53L0X::VL53L0X(TwoWire &i2c, uint8_t i2c_addr, uint8_t shutdown_pin, uint8_t d
     _shutdown_pin = shutdown_pin;
     _device_mode = device_mode;
 
-    /* disable sensor by default to avoid multiple sensor with same adress at the begining */
-    pinMode(_shutdown_pin, OUTPUT);
-    digitalWrite(_shutdown_pin, LOW);
+    if(_shutdown_pin != NULL)
+    {
+        /* disable sensor by default to avoid multiple sensor with same adress at the begining */
+        pinMode(_shutdown_pin, OUTPUT);
+        digitalWrite(_shutdown_pin, LOW);
+    }
+
 }
 /**
  * @brief
@@ -307,8 +311,11 @@ boolean VL53L0X::setAddress(uint8_t newAddr, uint8_t shutdown_pin)
     newAddr &= 0x7F;
 
     // Enable sensor
-    pinMode(shutdown_pin, INPUT);
-    delay(2); // Not ideal but we need to wait for the sensors to boot
+    if(shutdown_pin != NULL)
+    {
+        pinMode(shutdown_pin, INPUT);
+        delay(2); // Not ideal but we need to wait for the sensors to boot
+    }
 
     Status = VL53L0X_SetDeviceAddress(&_device, newAddr * 2); // 7->8 bit
 
