@@ -15,6 +15,7 @@ fi
 
 PROFILE="$HOME/.profile"
 BASHRC="$HOME/.bashrc"
+ZSHRC="$HOME/.zshrc"
 # Download and install Aduino IDE if it is not already installed
 
 if [ -z "$ARDUINO_DIR" ]; then # ifndef ARDUINO_DIR
@@ -98,6 +99,10 @@ if  [ -z "$ESP_ROOT" ] ; then
 
         echo export ESP_ROOT="~/Documents/Arduino/hardware/espressif/esp32" >> "$PROFILE"
         echo export PYTHONPATH="$REPOSITORY/raspberrypi/:\$PYTHONPATH" >> "$BASHRC"
+
+		#manage default zsh shell case on macos catalina
+		echo export "source ~/.bashrc" >> "$ZSHRC"
+		echo export "source ~/.profile" >> "$ZSHRC"
 
         #install esptool.py to correct mac os esp32 error
         pip install esptool
