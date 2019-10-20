@@ -15,6 +15,7 @@ void setup()
     digitalWrite(7, HIGH);
 
     Wire.begin();
+    Wire.setClock(400000);
 
     Serial.begin(115200);
 
