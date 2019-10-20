@@ -28,6 +28,14 @@ void VL6180X::setAddress(uint8_t new_addr)
     _last_status = _i2c->endTransmission();
 }
 
+void VL6180X::load_tunning_settings()
+{
+    for (unsigned int i = 0; i < (sizeof(VL6180X_tuning_table) / sizeof(VL6180X_tuning_t)); i++)
+    {
+        writeReg(VL6180X_tuning_table[i].reg, VL6180X_tuning_table[i].value);
+    }
+}
+
 void VL6180X::shutdown()
 {
     /* always shutdown the sensor at the beggining */
@@ -55,36 +63,7 @@ bool VL6180X::begin()
     {
         _scaling = 1;
 
-        writeReg(0x207, 0x01);
-        writeReg(0x208, 0x01);
-        writeReg(0x096, 0x00);
-        writeReg(0x097, 0xFD); // RANGE_SCALER = 253
-        writeReg(0x0E3, 0x00);
-        writeReg(0x0E4, 0x04);
-        writeReg(0x0E5, 0x02);
-        writeReg(0x0E6, 0x01);
-        writeReg(0x0E7, 0x03);
-        writeReg(0x0F5, 0x02);
-        writeReg(0x0D9, 0x05);
-        writeReg(0x0DB, 0xCE);
-        writeReg(0x0DC, 0x03);
-        writeReg(0x0DD, 0xF8);
-        writeReg(0x09F, 0x00);
-        writeReg(0x0A3, 0x3C);
-        writeReg(0x0B7, 0x00);
-        writeReg(0x0BB, 0x3C);
-        writeReg(0x0B2, 0x09);
-        writeReg(0x0CA, 0x09);
-        writeReg(0x198, 0x01);
-        writeReg(0x1B0, 0x17);
-        writeReg(0x1AD, 0x00);
-        writeReg(0x0FF, 0x05);
-        writeReg(0x100, 0x05);
-        writeReg(0x199, 0x05);
-        writeReg(0x1A6, 0x1B);
-        writeReg(0x1AC, 0x3E);
-        writeReg(0x1A7, 0x1F);
-        writeReg(0x030, 0x00);
+        load_tunning_settings();
 
         writeReg(VL6180X_SYSTEM__FRESH_OUT_OF_RESET, 0);
     }

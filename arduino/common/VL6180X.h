@@ -43,6 +43,8 @@ public:
 private:
     void setAddress(uint8_t new_addr);
 
+    void load_tunning_settings();
+
     void writeReg(uint16_t reg, uint8_t value);
     void writeReg16Bit(uint16_t reg, uint16_t value);
     void writeReg32Bit(uint16_t reg, uint32_t value);
