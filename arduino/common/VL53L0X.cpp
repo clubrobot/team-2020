@@ -541,9 +541,9 @@ void VL53L0X::setAddress(uint8_t new_addr)
 
 void VL53L0X::load_tunning_settings()
 {
-    for (unsigned int i = 0; i < (sizeof(tuning_table) / sizeof(VL53L0X_tuning_t)); i++)
+    for (unsigned int i = 0; i < (sizeof(VL53L0X_tuning_table) / sizeof(VL53L0X_tuning_t)); i++)
     {
-        writeReg(tuning_table[i].reg, tuning_table[i].value);
+        writeReg(VL53L0X_tuning_table[i].reg, VL53L0X_tuning_table[i].value);
     }
 }
 

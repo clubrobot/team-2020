@@ -9,7 +9,7 @@ typedef struct
     uint8_t value;
 } VL53L0X_tuning_t;
 
-VL53L0X_tuning_t tuning_table[] =
+VL53L0X_tuning_t VL53L0X_tuning_table[] =
     {
         {0xFF, 0x01},
         {0x00, 0x00},
