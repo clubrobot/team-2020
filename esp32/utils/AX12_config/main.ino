@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "../common/SerialTalks.h"
-#include "../common/AX12/AX12.h"
+#include <SerialTalks.h>
+#include <AX12.h>
 #include "instructions.h"
 
 AX12 ax;

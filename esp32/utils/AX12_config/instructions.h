@@ -1,8 +1,8 @@
 #ifndef __INSTRUCTIONS_H__
 #define __INSTRUCTIONS_H__
 
-#include "../common/SerialTalks.h"
-#include "../common/AX12/AX12.h"
+#include <SerialTalks.h>
+#include <AX12.h>
 
 #define ATTACH_OPCODE 0X10
 #define DETACH_OPCODE 0X11
