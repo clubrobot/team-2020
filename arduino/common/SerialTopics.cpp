@@ -62,7 +62,7 @@ void SerialTopics::begin(SerialTalks &talks)
 {
     _talks = &talks;
 
-    _talks->bind(SUBSCRIBE_OPCODE, SUBSCRIBE;
+    _talks->bind(SUBSCRIBE_OPCODE, SUBSCRIBE);
     _talks->bind(UNSUBSCRIBE_OPCODE, UNSUBSCRIBE);
     _talks->bind(GET_CONTEXT_OPCODE, GET_CONTEXT);
 
