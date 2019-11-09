@@ -8,9 +8,9 @@
 
 #define SERIALTOPICS_MAX_OPCODE 5
 
-#define START_SUBSCRIPTION_OPCODE 0X07
-#define STOP_SUBSCRIPTION_OPCODE 0X08
-#define GET_SUBSCRIPTION_STATE_OPCODE 0X09
+#define SUBSCRIBE_OPCODE 0X07
+#define UNSUBSCRIBE_OPCODE 0X08
+#define GET_CONTEXT_OPCODE 0X09
 
 class SerialTopics
 {
@@ -37,9 +37,9 @@ private:
 
     subscription_t _subscriptions[SERIALTOPICS_MAX_OPCODE]; /*!< Listes des souscriptions enregistrées avec un OPCode associé.*/
 
-    static void START_SUBSCRIPTION(SerialTalks &talks, Deserializer &input, Serializer &output);
-    static void STOP_SUBSCRIPTION(SerialTalks &talks, Deserializer &input, Serializer &output);
-    static void GET_SUBSCRIPTION_STATE(SerialTalks &talks, Deserializer &input, Serializer &output);
+    static void SUBSCRIBE(SerialTalks &talks, Deserializer &input, Serializer &output);
+    static void UNSUBSCRIBE(SerialTalks &talks, Deserializer &input, Serializer &output);
+    static void GET_CONTEXT(SerialTalks &talks, Deserializer &input, Serializer &output);
 
     static void DEFAULT_HANDLER(Serializer &output);
 };

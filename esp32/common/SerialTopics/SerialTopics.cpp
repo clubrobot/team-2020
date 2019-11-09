@@ -5,7 +5,7 @@
 
 SerialTopics topics;
 
-void SerialTopics::START_SUBSCRIPTION(SerialTalks &talks, Deserializer &input, Serializer &output)
+void SerialTopics::SUBSCRIBE(SerialTalks &talks, Deserializer &input, Serializer &output)
 {
     byte opcode = input.read<byte>();
     long timestep = input.read<long>();
@@ -23,7 +23,7 @@ void SerialTopics::START_SUBSCRIPTION(SerialTalks &talks, Deserializer &input, S
     }
 }
 
-void SerialTopics::STOP_SUBSCRIPTION(SerialTalks &talks, Deserializer &input, Serializer &output)
+void SerialTopics::UNSUBSCRIBE(SerialTalks &talks, Deserializer &input, Serializer &output)
 {
     byte opcode = input.read<byte>();
 
@@ -38,7 +38,7 @@ void SerialTopics::STOP_SUBSCRIPTION(SerialTalks &talks, Deserializer &input, Se
     }
 }
 
-void SerialTopics::GET_SUBSCRIPTION_STATE(SerialTalks &talks, Deserializer &input, Serializer &output)
+void SerialTopics::GET_CONTEXT(SerialTalks &talks, Deserializer &input, Serializer &output)
 {
     byte opcode = input.read<byte>();
 
@@ -62,9 +62,9 @@ void SerialTopics::begin(SerialTalks &talks)
 {
     _talks = &talks;
 
-    _talks->bind(START_SUBSCRIPTION_OPCODE, START_SUBSCRIPTION);
-    _talks->bind(STOP_SUBSCRIPTION_OPCODE, STOP_SUBSCRIPTION);
-    _talks->bind(GET_SUBSCRIPTION_STATE_OPCODE, GET_SUBSCRIPTION_STATE);
+    _talks->bind(SUBSCRIBE_OPCODE, SUBSCRIBE;
+    _talks->bind(UNSUBSCRIBE_OPCODE, UNSUBSCRIBE);
+    _talks->bind(GET_CONTEXT_OPCODE, GET_CONTEXT);
 
     for (int i = 0; i < SERIALTOPICS_MAX_OPCODE; i++)
     {
