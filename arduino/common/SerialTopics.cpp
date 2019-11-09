@@ -69,6 +69,7 @@ void SerialTopics::begin(SerialTalks &talks)
     for (int i = 0; i < SERIALTOPICS_MAX_OPCODE; i++)
     {
         _subscriptions[i].timestep = SERIALTOPICS_DEFAULT_TIMING;
+        _subscriptions[i].lasttime = 0;
         _subscriptions[i].enable = false;
         _subscriptions[i].func = DEFAULT_HANDLER;
     }
