@@ -74,10 +74,10 @@ void SerialTopics::begin(SerialTalks &talks)
     }
 }
 
-void SerialTopics::bind(byte opcode, Subscription instruction)
+void SerialTopics::bind(byte opcode, Subscription subscription)
 {
     if (opcode < SERIALTOPICS_MAX_OPCODE)
-        _subscriptions[opcode].func = instruction;
+        _subscriptions[opcode].func = subscription;
 }
 
 bool SerialTopics::execute()

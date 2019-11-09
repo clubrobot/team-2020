@@ -27,7 +27,7 @@ public:
     } subscription_t;
 
     void begin(SerialTalks &talks);
-    void bind(byte opcode, Subscription instruction);
+    void bind(byte opcode, Subscription subscription);
     bool execute();
 
     subscription_t *getSubscriptions() { return _subscriptions; }
