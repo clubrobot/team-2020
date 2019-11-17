@@ -16,9 +16,7 @@ from collections import namedtuple
 
 SubscriptionContext = namedtuple('SubscriptionContext', ['timestep', 'state'])
 
-SUBSCRIBE_OPCODE = 0X07
-UNSUBSCRIBE_OPCODE = 0X08
-GET_CONTEXT_OPCODE = 0X09
+MANAGE_OPCODE = 0X07
 
 TOPIC_MAX_OPCODE = 0X05
 
@@ -53,26 +51,23 @@ class Topic:
 
 
 class SerialTopics:
+    SUBSCRIBE = 0X0
+    UNSUBSCRIBE = 0X1
+
     def __init__(self, parent):
         self.parent = parent
 
     def subscribe(self, topic):
         output = self.parent.execute(
-            SUBSCRIBE_OPCODE, BYTE(topic.getID()), LONG(topic.getTimestep()))
+            MANAGE_OPCODE, BYTE(self.SUBSCRIBE), BYTE(topic.getID()), LONG(topic.getTimestep()))
 
         return bool(output.read(BYTE))
 
     def unsubscribe(self, topic):
         output = self.parent.execute(
-            UNSUBSCRIBE_OPCODE, BYTE(topic.getID()))
+            MANAGE_OPCODE, BYTE(self.UNSUBSCRIBE), BYTE(topic.getID()))
 
         return bool(output.read(BYTE))
-
-    def get_context(self, topic):
-        output = self.parent.execute(
-            GET_CONTEXT_OPCODE, BYTE(topic.getID()))
-        timestep, state = output.read(LONG, BYTE)
-        return SubscriptionContext(timestep, bool(state))
 
     def add(self, topic):
         if(topic.getID() < TOPIC_MAX_OPCODE):

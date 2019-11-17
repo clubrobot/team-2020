@@ -29,9 +29,6 @@ class Arduino(SerialTalks):
     def unsubscribeCounter(self):
         return self.topics.unsubscribe(self.counter)
 
-    def getCounterContext(self):
-        return self.topics.get_context(self.counter)
-
     def getCounter(self):
         return self.counter.getRessource()
 
@@ -52,11 +49,9 @@ if __name__ == "__main__":
         print("Subscription succes")
     else:
         print("Subscription error")
-
-    print(arduino.getCounterContext())
     # Send some instruction
     # Activate sensors
-    for i in range(0, 100):
+    for i in range(0, 10):
         print("res = " + str(arduino.getCounter()))
         arduino.on()  # ON
         time.sleep(0.5)
