@@ -8,7 +8,7 @@ COMMON = ../common
 LOCAL_INO_SRCS = SerialTopics.ino
 LOCAL_CPP_SRCS = \
 	instructions.cpp \
-	subscriptions.cpp \
+	topics.cpp \
 	$(COMMON)/SerialTalks.cpp \
 	$(COMMON)/CRC16.cpp \
 	$(COMMON)/SerialTopics.cpp 

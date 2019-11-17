@@ -11,7 +11,7 @@ COMMON = ../common
 #Setup all libs used !
 LIBS =  $(ESP_LIBS)/EEPROM \
 		instructions.cpp \
-		subscriptions.cpp \
+		topics.cpp \
 		$(COMMON)/SerialTalks \
 		$(COMMON)/CRC16 \
 		$(COMMON)/SerialTopics
