@@ -55,7 +55,11 @@ class SerialTopics:
     UNSUBSCRIBE = 0X1
 
     def __init__(self, parent):
-        self.parent = parent
+        if(isinstance(parent, SerialTalks)):
+            self.parent = parent
+        else:
+            raise TypeError(
+                "SerialTopics parent need to be SerialTalks instance")
 
     def subscribe(self, topic):
         output = self.parent.execute(
