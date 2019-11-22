@@ -5,6 +5,13 @@
 
 SerialTopics topics;
 
+/**
+ * @brief Serialtalks instruction to manage subscription context
+ *
+ * @param talks SerialTalks instance
+ * @param input Deserializer instance
+ * @param output Serializer instance
+ */
 void SerialTopics::MANAGE(SerialTalks &talks, Deserializer &input, Serializer &output)
 {
     byte command = input.read<byte>();
@@ -47,11 +54,21 @@ void SerialTopics::MANAGE(SerialTalks &talks, Deserializer &input, Serializer &o
     }
     }
 }
-
+/**
+ * @brief Default topic handler
+ *
+ * @param output Serializer instance
+ */
 void SerialTopics::DEFAULT_HANDLER(Serializer &output)
 {
 }
-
+/**
+ * @brief begin topics with serialtalks instance
+ *  This function bind manage instruction and configure all
+ *  topics by default
+ *
+ * @param talks SerialTalks instance
+ */
 void SerialTopics::begin(SerialTalks &talks)
 {
     _talks = &talks;
@@ -66,13 +83,24 @@ void SerialTopics::begin(SerialTalks &talks)
         _subscriptions[i].func = DEFAULT_HANDLER;
     }
 }
-
+/**
+ * @brief Call bind function to associate custom topic at desired opcode
+ *
+ * @param opcode
+ * @param subscription
+ */
 void SerialTopics::bind(byte opcode, Subscription subscription)
 {
     if (opcode < SERIALTOPICS_MAX_OPCODE)
         _subscriptions[opcode].func = subscription;
 }
-
+/**
+ * @brief function called at each loop iteration.
+ *  This function check context for each topic and execute it when timeout occur.
+ *
+ * @return true
+ * @return false
+ */
 bool SerialTopics::execute()
 {
     long currentTime = millis();

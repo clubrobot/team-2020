@@ -16,15 +16,21 @@
 class SerialTopics
 {
 public:
+    /**
+     * @brief Subscription function pointer
+     */
     typedef void (*Subscription)(Serializer &output);
 
+    /**
+     * @brief Subscription context structure
+     */
     typedef struct
     {
         /* data */
-        Subscription func;
-        long timestep;
-        long lasttime;
-        bool enable;
+        Subscription func; /* binded function */
+        long timestep;     /* timestep in ms */
+        long lasttime;     /* last iteration time */
+        bool enable;       /* enable /disable */
     } subscription_t;
 
     void begin(SerialTalks &talks);
