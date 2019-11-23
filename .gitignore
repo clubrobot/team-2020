@@ -62,3 +62,6 @@ arduino-1.6.12/
 API/arduino
 API/python
 API/esp32
+
+#log files
+*.log
