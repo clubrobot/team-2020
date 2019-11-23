@@ -4,7 +4,7 @@
 from collections import namedtuple
 from time import time, asctime, sleep
 
-from logs.log_color import Colors
+from logs.utils.log_color import Colors
 
 LogCommand = namedtuple('LogCommand', ['command', 'param'])
 LogLevel = namedtuple('LogLevel', ['value', 'name', 'color'])
