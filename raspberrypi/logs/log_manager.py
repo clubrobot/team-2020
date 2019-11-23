@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from multiprocessing import Process, Pipe, Event
+from multiprocessing import Process, Pipe, Lock
 from collections import namedtuple
 from time import time, asctime, sleep
 
@@ -28,6 +28,8 @@ class LogManager(Process):
         Process.__init__(self)
         # terminate with the main process
         self.daemon = True
+
+        self.lock = Lock()
 
         # communication pipe
         self.pipe = PipeType(*Pipe())
@@ -121,7 +123,9 @@ class LogManager(Process):
 
     # send pipe message
     def send(self, obj):
+        self.lock.acquire()
         self.pipe.child_conn.send(obj)
+        self.lock.release()
 
     # close pipe
     def close(self):
