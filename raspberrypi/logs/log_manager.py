@@ -40,6 +40,10 @@ class LogManager(Process):
         # dict that contain all loggers proxy context
         self.loggersContext = dict()
 
+        # file to store all logs
+        self.commonLogFile = None
+        self.commonLogFileName = None
+
     # resetting log init time
     def reset_time(self):
         self.initial_time = time()
@@ -57,8 +61,10 @@ class LogManager(Process):
                 if not msg.param.name in self.loggersContext:
                     # create it and store the context
                     self.loggersContext[msg.param.name] = dict()
-                    self.loggersContext[msg.param.name]["filename"] = msg.param.name + '-{}-{}-{}.log'.format(*
-                                                                                                              asctime().split(" ")[1:4])
+                    self.commonLogFileName = '{}-{}-{}.log'.format(
+                        *asctime().split(" ")[1:4])
+                    self.loggersContext[msg.param.name]["filename"] = msg.param.name + \
+                        '-' + self.commonLogFileName
                     self.loggersContext[msg.param.name]["exec_param"] = msg.param.exec_param
                     self.loggersContext[msg.param.name]["level_disp"] = msg.param.level_disp.value
 
@@ -66,6 +72,9 @@ class LogManager(Process):
                     if msg.param.exec_param > 0:
                         self.loggersContext[msg.param.name]["file"] = open(
                             self.loggersContext[msg.param.name]["filename"], "a", newline='\n', encoding="utf-8")
+                        self.commonLogFile = open(
+                            self.commonLogFileName, "a", newline='\n', encoding="utf-8")
+
                     else:
                         self.loggersContext[msg.param.name]["file"] = None
 
@@ -91,7 +100,7 @@ class LogManager(Process):
                     file = self.loggersContext[msg.param.name]["file"]
                     # if write on file is set
                     if self.loggersContext[msg.param.name]["exec_param"] > 0 and file is not None:
-                        # write message
+                        # write specific logs
                         file.write(msg.param.time)
                         file.write('('+msg.param.name+')')
                         file.write(msg.param.level.name)
@@ -103,6 +112,19 @@ class LogManager(Process):
                                 str(key)), "\t", str(content))
                         file.write("\n")
                         file.flush()
+
+                        # write common logs
+                        self.commonLogFile.write(msg.param.time)
+                        self.commonLogFile.write('('+msg.param.name+')')
+                        self.commonLogFile.write(msg.param.level.name)
+                        self.commonLogFile.write(" : ")
+                        for arg in msg.param.args:
+                            self.commonLogFile.write(" {}".format(str(arg)))
+                        for key, content in msg.param.kwargs.items():
+                            self.commonLogFile.write("\n{} : ".format(
+                                str(key)), "\t", str(content))
+                        self.commonLogFile.write("\n")
+                        self.commonLogFile.flush()
 
     # format time with colorisation
     def formatTime(self, time):
