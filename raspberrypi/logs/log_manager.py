@@ -77,6 +77,7 @@ class LogManager(Process):
 
                     else:
                         self.loggersContext[msg.param.name]["file"] = None
+                        self.commonLogFile = None
 
             # called at each logger write cmd
             elif(msg.command == self.WRITE_LOG):
@@ -112,19 +113,20 @@ class LogManager(Process):
                                 str(key)), "\t", str(content))
                         file.write("\n")
                         file.flush()
-
-                        # write common logs
-                        self.commonLogFile.write(msg.param.time)
-                        self.commonLogFile.write('('+msg.param.name+')')
-                        self.commonLogFile.write(msg.param.level.name)
-                        self.commonLogFile.write(" : ")
-                        for arg in msg.param.args:
-                            self.commonLogFile.write(" {}".format(str(arg)))
-                        for key, content in msg.param.kwargs.items():
-                            self.commonLogFile.write("\n{} : ".format(
-                                str(key)), "\t", str(content))
-                        self.commonLogFile.write("\n")
-                        self.commonLogFile.flush()
+                        if self.commonLogFile is not None:
+                            # write common logs
+                            self.commonLogFile.write(msg.param.time)
+                            self.commonLogFile.write('('+msg.param.name+')')
+                            self.commonLogFile.write(msg.param.level.name)
+                            self.commonLogFile.write(" : ")
+                            for arg in msg.param.args:
+                                self.commonLogFile.write(
+                                    " {}".format(str(arg)))
+                            for key, content in msg.param.kwargs.items():
+                                self.commonLogFile.write("\n{} : ".format(
+                                    str(key)), "\t", str(content))
+                            self.commonLogFile.write("\n")
+                            self.commonLogFile.flush()
 
     # format time with colorisation
     def formatTime(self, time):
