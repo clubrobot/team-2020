@@ -30,6 +30,7 @@ class Logger:
     # Pour dumper des information quand vous débuggez.
     DEBUG = LogLevel(10, '[DEBUG]', Colors.BLUE)
 
+    # int the logger proxy and send file init parameters to the server
     def __init__(self, parent, name, exec_param, level_disp):
         self.parent = parent
         self.name = name
@@ -39,9 +40,11 @@ class Logger:
         self.parent.send(LogCommand(self.parent.INIT, LogInit(
             self.name, self.exec_param, self.level_disp)))
 
+    # call write
     def __call__(self, *args, **kwargs):
         self.write(*args, **kwargs)
 
+    # send write command with desired message to the server
     def write(self, *args, **kwargs):
         t = str("[{0:.3g}]".format(time() - self.parent.initial_time))
         if 'level' in kwargs:
