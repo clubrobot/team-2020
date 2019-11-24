@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 from multiprocessing import Process, Pipe, Lock
 from collections import namedtuple
 from time import time, asctime, sleep
@@ -44,6 +45,8 @@ class LogManager(Process):
         self.commonLogFile = None
         self.commonLogFileName = None
 
+        self.folder = '{}-{}-{}'.format(*asctime().split(" ")[1:4])
+
     # resetting log init time
     def reset_time(self):
         self.initial_time = time()
@@ -60,20 +63,15 @@ class LogManager(Process):
                 # if logger doesn't exist
                 if not msg.param.name in self.loggersContext:
                     # create it and store the context
-                    self.loggersContext[msg.param.name] = dict()
-                    self.commonLogFileName = '{}-{}-{}.log'.format(
-                        *asctime().split(" ")[1:4])
-                    self.loggersContext[msg.param.name]["filename"] = msg.param.name + \
-                        '-' + self.commonLogFileName
-                    self.loggersContext[msg.param.name]["exec_param"] = msg.param.exec_param
-                    self.loggersContext[msg.param.name]["level_disp"] = msg.param.level_disp.value
+                    self.createContext(msg)
 
                     # if write parameter is set, create file
                     if msg.param.exec_param > 0:
-                        self.loggersContext[msg.param.name]["file"] = open(
-                            self.loggersContext[msg.param.name]["filename"], "a", newline='\n', encoding="utf-8")
-                        self.commonLogFile = open(
-                            self.commonLogFileName, "a", newline='\n', encoding="utf-8")
+                        self.createFolder(self.loggersContext[msg.param.name]["folder"])
+
+                        self.loggersContext[msg.param.name]["file"] = self.createFile(self.loggersContext[msg.param.name]["filename"])
+
+                        self.commonLogFile = self.createFile(self.commonLogFileName)
 
                     else:
                         self.loggersContext[msg.param.name]["file"] = None
@@ -88,45 +86,17 @@ class LogManager(Process):
                         # check the desired diplaylog severity
                         if msg.param.level.value <= self.loggersContext[msg.param.name]["level_disp"]:
                             # show the message
-                            print(self.formatTime(msg.param.time),
-                                  self.formatName(msg.param.name),
-                                  self.formatLevel(msg.param.level),
-                                  ':',
-                                  *msg.param.args)
-                            for key, content in msg.param.kwargs.items():
-                                print("  •", key, ":")
-                                print("      ", content)
+                            self.showMsg(msg)
 
                     # get specific logger file
                     file = self.loggersContext[msg.param.name]["file"]
                     # if write on file is set
                     if self.loggersContext[msg.param.name]["exec_param"] > 0 and file is not None:
                         # write specific logs
-                        file.write(msg.param.time)
-                        file.write('('+msg.param.name+')')
-                        file.write(msg.param.level.name)
-                        file.write(" : ")
-                        for arg in msg.param.args:
-                            file.write(" {}".format(str(arg)))
-                        for key, content in msg.param.kwargs.items():
-                            file.write("\n{} : ".format(
-                                str(key)), "\t", str(content))
-                        file.write("\n")
-                        file.flush()
+                        self.writeFile(file, msg)
                         if self.commonLogFile is not None:
                             # write common logs
-                            self.commonLogFile.write(msg.param.time)
-                            self.commonLogFile.write('('+msg.param.name+')')
-                            self.commonLogFile.write(msg.param.level.name)
-                            self.commonLogFile.write(" : ")
-                            for arg in msg.param.args:
-                                self.commonLogFile.write(
-                                    " {}".format(str(arg)))
-                            for key, content in msg.param.kwargs.items():
-                                self.commonLogFile.write("\n{} : ".format(
-                                    str(key)), "\t", str(content))
-                            self.commonLogFile.write("\n")
-                            self.commonLogFile.flush()
+                            self.writeFile(self.commonLogFile, msg)
 
     # format time with colorisation
     def formatTime(self, time):
@@ -140,6 +110,50 @@ class LogManager(Process):
     def formatName(self, name):
         name = '('+name+')'
         return colorise(name, color=Colors.GREY, car_attr=Colors.BOLD)
+
+    def createFolder(self, name):
+        if not os.path.exists(name):
+            try:
+                os.mkdir(name)
+            except OSError:
+                print("Creation of the directory %s failed" % name)
+
+    def createFile(self, name):
+        return open(name, "a", newline='\n', encoding="utf-8")
+
+    def createContext(self, msg):
+        self.loggersContext[msg.param.name] = dict()
+        self.loggersContext[msg.param.name]["folder"] = self.folder
+        self.loggersContext[msg.param.name]["filename"] = self.folder + '/'+msg.param.name+'.log'
+        self.loggersContext[msg.param.name]["exec_param"] = msg.param.exec_param
+        self.loggersContext[msg.param.name]["level_disp"] = msg.param.level_disp.value
+
+        self.commonLogFileName = self.folder + '/all.log'
+
+    def writeFile(self, file, msg):
+        file.write(msg.param.time)
+        file.write('('+msg.param.name+')')
+        file.write(msg.param.level.name)
+        file.write(" : ")
+        for arg in msg.param.args:
+            file.write(" {}".format(str(arg)))
+
+        for key, content in msg.param.kwargs.items():
+            file.write("\n{} : ".format(str(key)), "\t", str(content))
+
+        file.write("\n")
+        file.flush()
+
+    def showMsg(self, msg):
+        print(  self.formatTime(msg.param.time),
+                self.formatName(msg.param.name),
+                self.formatLevel(msg.param.level),
+                ':',
+                *msg.param.args)
+
+        for key, content in msg.param.kwargs.items():
+            print("  •", key, ":")
+            print("      ", content)
 
     # receive pipe message
     def recv(self):
