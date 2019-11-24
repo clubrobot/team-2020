@@ -5,6 +5,7 @@ import threading
 
 
 def thread_wheeledbase():
+    sleep(2)
     loggerWheeledbase = log.getlogger(
         'Wheeledbase', exec_param=Logger.BOTH, level_disp=Logger.CRITICAL)
     loggerWheeledbase("b", level=Logger.CRITICAL)
