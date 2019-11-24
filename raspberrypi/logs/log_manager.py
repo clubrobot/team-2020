@@ -51,27 +51,37 @@ class LogManager(Process):
     def reset_time(self):
         self.initial_time = time()
 
+    # send pipe message
+    def send(self, obj):
+        self.lock.acquire()
+        self.pipe.child_conn.send(obj)
+        self.lock.release()
+
+    # get logger proxy
+    def getlogger(self, name, exec_param=SHOW, level_disp=Logger.DEBUG):
+        return Logger(self, name, exec_param, level_disp)
+
     # process
     def run(self):
         # infinite loop
         while True:
             # get the message
-            msg = self.recv()
+            msg = self.__recv()
 
             # called at logger creation
             if(msg.command == self.INIT):
                 # if logger doesn't exist
                 if not msg.param.name in self.loggersContext:
                     # create it and store the context
-                    self.createContext(msg)
+                    self.__createContext(msg)
 
                     # if write parameter is set, create file
                     if msg.param.exec_param > 0:
                         self.createFolder(self.loggersContext[msg.param.name]["folder"])
 
-                        self.loggersContext[msg.param.name]["file"] = self.createFile(self.loggersContext[msg.param.name]["filename"])
+                        self.loggersContext[msg.param.name]["file"] = self.__createFile(self.loggersContext[msg.param.name]["filename"])
 
-                        self.commonLogFile = self.createFile(self.commonLogFileName)
+                        self.commonLogFile = self.__createFile(self.commonLogFileName)
 
                     else:
                         self.loggersContext[msg.param.name]["file"] = None
@@ -86,28 +96,28 @@ class LogManager(Process):
                         # check the desired diplaylog severity
                         if msg.param.level.value <= self.loggersContext[msg.param.name]["level_disp"]:
                             # show the message
-                            self.showMsg(msg)
+                            self.__showMsg(msg)
 
                     # get specific logger file
                     file = self.loggersContext[msg.param.name]["file"]
                     # if write on file is set
                     if self.loggersContext[msg.param.name]["exec_param"] > 0 and file is not None:
                         # write specific logs
-                        self.writeFile(file, msg)
+                        self.__writeFile(file, msg)
                         if self.commonLogFile is not None:
                             # write common logs
-                            self.writeFile(self.commonLogFile, msg)
+                            self.__writeFile(self.commonLogFile, msg)
 
     # format time with colorisation
-    def formatTime(self, time):
+    def __formatTime(self, time):
         return colorise(time, car_attr=Colors.BOLD)
 
     # format level with colorisation
-    def formatLevel(self, level):
+    def __formatLevel(self, level):
         return colorise(level.name, color=level.color)
 
     # format name with colorisation
-    def formatName(self, name):
+    def __formatName(self, name):
         name = '('+name+')'
         return colorise(name, color=Colors.GREY, car_attr=Colors.BOLD)
 
@@ -118,10 +128,10 @@ class LogManager(Process):
             except OSError:
                 print("Creation of the directory %s failed" % name)
 
-    def createFile(self, name):
+    def __createFile(self, name):
         return open(name, "a", newline='\n', encoding="utf-8")
 
-    def createContext(self, msg):
+    def __createContext(self, msg):
         self.loggersContext[msg.param.name] = dict()
         self.loggersContext[msg.param.name]["folder"] = self.folder
         self.loggersContext[msg.param.name]["filename"] = self.folder + '/'+msg.param.name+'.log'
@@ -130,7 +140,7 @@ class LogManager(Process):
 
         self.commonLogFileName = self.folder + '/all.log'
 
-    def writeFile(self, file, msg):
+    def __writeFile(self, file, msg):
         file.write(msg.param.time)
         file.write('('+msg.param.name+')')
         file.write(msg.param.level.name)
@@ -144,10 +154,10 @@ class LogManager(Process):
         file.write("\n")
         file.flush()
 
-    def showMsg(self, msg):
-        print(  self.formatTime(msg.param.time),
-                self.formatName(msg.param.name),
-                self.formatLevel(msg.param.level),
+    def __showMsg(self, msg):
+        print(  self.__formatTime(msg.param.time),
+                self.__formatName(msg.param.name),
+                self.__formatLevel(msg.param.level),
                 ':',
                 *msg.param.args)
 
@@ -156,19 +166,9 @@ class LogManager(Process):
             print("      ", content)
 
     # receive pipe message
-    def recv(self):
+    def __recv(self):
         return self.pipe.parent_conn.recv()
 
-    # send pipe message
-    def send(self, obj):
-        self.lock.acquire()
-        self.pipe.child_conn.send(obj)
-        self.lock.release()
-
     # close pipe
-    def close(self):
+    def __close(self):
         self.pipe.child_conn.close()
-
-    # get logger proxy
-    def getlogger(self, name, exec_param=SHOW, level_disp=Logger.DEBUG):
-        return Logger(self, name, exec_param, level_disp)
