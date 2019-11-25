@@ -1,4 +1,4 @@
-from arduino import ArduinoLocal, TopicHandler, INT
+from daughter_cards.arduino import ArduinoLocal, TopicHandler, INT
 from common.components import Manager
 
 
