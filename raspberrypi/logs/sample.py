@@ -6,8 +6,12 @@ import threading
 
 def thread_wheeledbase():
     sleep(2)
-    loggerWheeledbase = log.getlogger(
-        'Wheeledbase', exec_param=Logger.BOTH, level_disp=Logger.CRITICAL)
+    try:
+        loggerWheeledbase = log.getlogger(
+            'Wheeledbase', exec_param=Logger.BOTH, level_disp=Logger.CRITICAL)
+    except:
+        loggerWheeledbase = FakeLogger()
+
     loggerWheeledbase("b", level=Logger.CRITICAL)
     sleep(2)
     loggerWheeledbase("c", level=Logger.ERROR)
@@ -18,8 +22,11 @@ def thread_wheeledbase():
 
 
 def thread_sensors():
-    loggerSensors = log.getlogger(
-        'Sensors', exec_param=Logger.BOTH, level_disp=Logger.CRITICAL)
+    try:
+        loggerSensors = log.getlogger(
+            'Sensors', exec_param=Logger.BOTH, level_disp=Logger.CRITICAL)
+    except:
+        loggerSensors = FakeLogger()
 
     loggerSensors("b", level=Logger.CRITICAL)
     loggerSensors("c", level=Logger.ERROR)
@@ -32,7 +39,7 @@ def thread_sensors():
 if __name__ == "__main__":
 
     log = LogManager()
-    log.start()
+    #log.start()
 
     x1 = threading.Thread(target=thread_wheeledbase)
     x2 = threading.Thread(target=thread_sensors)
@@ -44,4 +51,8 @@ if __name__ == "__main__":
     x2.join()
 
     sleep(1)
-    log.terminate()
+    try:
+        log.stop()
+    except:
+        pass
+
