@@ -13,7 +13,6 @@ from logs.utils.logger import *
 
 PipeType = namedtuple('PipeType', ['parent_conn', 'child_conn'])
 
-
 @singleton
 class LogManager(Process):
     # command
@@ -51,6 +50,12 @@ class LogManager(Process):
     def reset_time(self):
         self.initial_time = time()
 
+    def stop(self):
+        try:
+            self.terminate()
+        except:
+            pass
+
     # send pipe message
     def send(self, obj):
         self.lock.acquire()
@@ -59,8 +64,15 @@ class LogManager(Process):
 
     # get logger proxy
     def getlogger(self, name, exec_param=SHOW, level_disp=Logger.DEBUG):
-        return Logger(self, name, exec_param, level_disp)
-
+        try:
+            return Logger(self, name, exec_param, level_disp)
+        except:
+            print(colorise('---------------------------------------------------------------------------',color=Colors.RED))
+            print(colorise('('+name+') WARNING : LogManager is not running, no log will be saved !',color=Colors.RED,car_attr=Colors.BOLD))
+            print(colorise('Use :\n\r\tlog.start()',color=Colors.YELLOW))
+            print(colorise('At the begginning of your app if you want to store logs',color=Colors.YELLOW))
+            print(colorise('---------------------------------------------------------------------------',color=Colors.RED))
+            return FakeLogger()
     # process
     def run(self):
         # infinite loop
