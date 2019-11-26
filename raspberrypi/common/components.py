@@ -64,7 +64,7 @@ try:
                 pass
 
             try:
-                output = self.parent.execute(MAKE_MANAGER_REPLY_OPCODE, opcode, input, timeout=0.5)
+                output = self.parent.execute(MAKE_MANAGER_REPLY_OPCODE, str(opcode)+str(self.uuid), input, timeout=0.5)
                 if output is None: return
                 content = LONG(retcode) + output
                 prefix = SLAVE_BYTE + BYTE(len(content))
