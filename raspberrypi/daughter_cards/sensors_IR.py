@@ -3,7 +3,7 @@
 
 from common.serialutils import Deserializer
 from common.serialtalks import SHORT
-from common.components import SecureSerialTalksProxy
+from daughter_cards.arduino import SecureArduino
 import time
 
 # Instructions
@@ -33,7 +33,7 @@ class FakeSensorsIR:
         return SensorsIR.ERROR_DIST, SensorsIR.ERROR_DIST
 
 
-class SensorsIR(SecureSerialTalksProxy):
+class SensorsIR(SecureArduino):
     MIN_TIMESTEP = 0.05
     ERROR_DIST = 1000
     DEFAULT = {GET_RANGE1_OPCODE: Deserializer(SHORT(ERROR_DIST)),
@@ -42,7 +42,7 @@ class SensorsIR(SecureSerialTalksProxy):
     # Default execute result
 
     def __init__(self, parent, uuid='sensors'):
-        SecureSerialTalksProxy.__init__(
+        SecureArduino.__init__(
             self, parent, uuid, default_result=self.DEFAULT)
         self.last_time = None
         self.last_both = (SensorsIR.ERROR_DIST, SensorsIR.ERROR_DIST)
