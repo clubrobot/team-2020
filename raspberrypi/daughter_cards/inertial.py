@@ -5,7 +5,7 @@ import time
 import math
 
 from common.serialtalks import INT
-from common.components import SerialTalksProxy
+from daughter_cards.arduino import Arduino
 
 # Instructions
 GET_ROBOT_ACC_OPCODE = 0x10
@@ -16,10 +16,10 @@ GET_SENSOR_VALUE_OPCODE = 0x14
 GET_SENSOR_STATE_OPCODE = 0x15
 
 
-class AccelerationSensor(SerialTalksProxy):
+class AccelerationSensor(Arduino):
 
     def __init__(self, parent, uuid='inertial'):
-        SerialTalksProxy.__init__(self, parent, uuid)
+        Arduino.__init__(self, parent, uuid)
 
     def get_acceleration(self, **kwargs):
         output = self.execute(GET_ROBOT_ACC_OPCODE)
