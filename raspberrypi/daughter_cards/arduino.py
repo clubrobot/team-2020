@@ -24,15 +24,15 @@ class Arduino(SerialTalksProxy):
 
         if  (not self.__dict__.get("subscribe"+name, None) is None ) or (not self.__dict__.get("unsubscribe"+name, None) is None):
             raise RuntimeError("Unable to create subscriber method")
-        
+
         def sub():
             output = self.execute(
-                _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))   
+                _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))
             return bool(output.read(BYTE))
 
         def usub():
             output = self.execute(
-                _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))   
+                _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))
             return bool(output.read(BYTE))
 
         self.__setattr__("subscribe"+name, sub)
@@ -40,6 +40,30 @@ class Arduino(SerialTalksProxy):
 
         self.bind(topic_code, handler)
 
+class SecureArduino(SecureSerialTalksProxy):
+    def __init__(self, server, uuid, default_result):
+        SecureSerialTalksProxy.__init__(self, server, uuid, default_result)
+
+    def addTopic(self, topic_code, handler, name, timestep):
+        name = name[0].upper() + name.lower()[1:]
+
+        if  (not self.__dict__.get("subscribe"+name, None) is None ) or (not self.__dict__.get("unsubscribe"+name, None) is None):
+            raise RuntimeError("Unable to create subscriber method")
+
+        def sub():
+            output = self.execute(
+                _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))
+            return bool(output.read(BYTE))
+
+        def usub():
+            output = self.execute(
+                _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))
+            return bool(output.read(BYTE))
+
+        self.__setattr__("subscribe"+name, sub)
+        self.__setattr__("unsubscribe"+name, usub)
+
+        self.bind(topic_code, handler)
 
 class ArduinoLocal(SerialTalks):
     def __init__(self, port):
@@ -50,10 +74,10 @@ class ArduinoLocal(SerialTalks):
 
         if  (not self.__dict__.get("subscribe"+name, None) is None ) or (not self.__dict__.get("unsubscribe"+name, None) is None):
             raise RuntimeError("Unable to create subscriber method")
-        
+
         def sub():
             output = self.execute(
-                _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))   
+                _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))
             return bool(output.read(BYTE))
 
         def usub():
