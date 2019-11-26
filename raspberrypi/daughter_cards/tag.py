@@ -5,17 +5,17 @@ import time
 import math
 
 from common.serialtalks import INT
-from common.components import SerialTalksProxy
+from daughter_cards.arduino import Arduino
 
 # Instructions
 
 GET_POSITION_OPCODE = 0x10
 
 
-class Tag(SerialTalksProxy):
+class Tag(Arduino):
 
     def __init__(self, parent, uuid='tag'):
-        SerialTalksProxy.__init__(self, parent, uuid)
+        Arduino.__init__(self, parent, uuid)
 
     def get_position(self, **kwargs):
         output = self.execute(GET_POSITION_OPCODE, **kwargs)
