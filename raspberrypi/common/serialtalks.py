@@ -151,6 +151,12 @@ class SerialTalks:
                 self.is_connected = False
 
     def disconnect(self):
+        # remove free buffer instruction to avoid unexpected call when port is closed
+        if FREE_BUFFER in self.instructions:
+            del self.instructions[FREE_BUFFER]
+            # reset virtual buffer
+            self.serial_buffer.reset()
+
         try:
             self.send(DISCONNECT_OPCODE)
         except NotConnectedError:

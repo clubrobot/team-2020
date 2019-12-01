@@ -58,10 +58,7 @@ class SerialBuffer:
         self.bytes_sended = 0
         bytes_to_send = bytes(self.stack_bytes)
         self.stack_bytes = bytearray()
-        try:
-            self.send(bytes_to_send, timeout=-1)
-        except SerialException:
-            pass #TODO : Check if this case only appear when stream is closed
+        self.send(bytes_to_send, timeout=-1)
         self.lock.release()
 
 
