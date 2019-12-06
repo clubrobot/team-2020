@@ -35,7 +35,7 @@ class LogWorker(Process):
         self.daemon = True
 
         # Communication pipe.
-        self.pipe = self.pipe = PipeType(*Pipe())
+        self.pipe = PipeType(*Pipe())
 
         # Lock
         self.lock = Lock()
@@ -96,13 +96,14 @@ class LogWorker(Process):
         if msg.args.name in self.context:
             # if disaly is set
 
+            # if exec_param equals 0 (print only) or 2 (both manner) 
             if self.context[msg.args.name]["exec_param"] % 2 == 0:
                 # check the desired diplaylog severity
                 if msg.args.level.value >= self.context[msg.args.name]["level_disp"]:
                     # show the message
                     self.__showMsg(msg)
 
-            # if write on file is set
+            # if write on file is set 1 (write only) or 2 (both manner)
             if self.context[msg.args.name]["exec_param"] > 0:
                 # write specific logs
                 self.__writeFile(self.context[msg.args.name]["file"], msg)
