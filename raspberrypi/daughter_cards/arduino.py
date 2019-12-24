@@ -46,8 +46,6 @@ class Arduino(SerialTalksProxy):
         SerialTalksProxy.__init__(self, server, uuid)
         self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, log_level)
 
-        self.logger(INFO, 'SerialTalksProxy initialisation success !')
-
     def addTopic(self, topic_code, handler, name, timestep):
         """
         Add topic handler to a specific topic_code.
@@ -92,8 +90,6 @@ class SecureArduino(SecureSerialTalksProxy):
         SecureSerialTalksProxy.__init__(self, server, uuid, default_result)
         self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, log_level)
 
-        self.logger(INFO, 'SecureSerialTalksProxy initialisation success !')
-
     def addTopic(self, topic_code, handler, name, timestep):
         """
         Add topic handler to a specific topic_code.
@@ -137,8 +133,6 @@ class ArduinoLocal(SerialTalks):
     def __init__(self, port, log_level=DEBUG):
         SerialTalks.__init__(self, port)
         self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, log_level)
-
-        self.logger(INFO, 'SerialTalks initialisation success !')
 
     def addTopic(self, topic_code, handler, name, timestep):
         """

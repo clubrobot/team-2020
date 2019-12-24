@@ -12,6 +12,7 @@ Lesser General Public License for more details.
 """
 import sys
 import serial
+from logs.log_manager import *
 from serial.serialutil import SerialException
 import time
 import random
@@ -84,7 +85,7 @@ class SerialTalksWarning(UserWarning, ConnectionError): pass
 
 class SerialTalks:
 
-    def __init__(self, port):
+    def __init__(self, port, log_level=DEBUG):
         # Serial things
         self.port = port
         self.is_connected = False
@@ -100,6 +101,11 @@ class SerialTalks:
         self.instructions = dict()
         self.instructions[RESEND_OPCODE] = self.resend
 
+        self.logger = LogManager().getlogger(self.__class__.__name__, Logger.BOTH, log_level)
+
+        self.logger(INFO, 'Initialisation success !')
+
+
     def __enter__(self):
         self.connect()
         return self
@@ -109,6 +115,7 @@ class SerialTalks:
 
     def connect(self, timeout=5):
         if self.is_connected:
+            self.logger(WARN, '{} is already connected'.format(self.port))
             raise AlreadyConnectedError('{} is already connected'.format(self.port))
 
         # Connect to the serial port
@@ -117,6 +124,7 @@ class SerialTalks:
                                         parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
             self.stream.timeout = 1
         except SerialException as e:
+            self.logger(ERROR, 'Connection Failed error',str(e))
             raise ConnectionFailedError(str(e)) from None
 
         self.serial_buffer = SerialBuffer(self.stream.write, inf)
@@ -124,7 +132,7 @@ class SerialTalks:
         # Try to bind FREE_BUFFER funct
         try:
             self.bind(FREE_BUFFER, self.serial_buffer.reset)
-        except KeyError: # If it's not the first connect executed 
+        except KeyError: # If it's not the first connect executed
             pass
         # Create a listening thread that will wait for inputs
         self.listener = SerialListener(self)
@@ -141,6 +149,8 @@ class SerialTalks:
             except TimeoutError:
                 if time.monotonic() - startingtime > timeout:
                     self.disconnect()
+                    self.logger(ERROR, '\'{}\' is mute. It may not be an Arduino or it\'s sketch may not be correctly loaded.'.format(
+                            self.stream.port))
                     raise MuteError(
                         '\'{}\' is mute. It may not be an Arduino or it\'s sketch may not be correctly loaded.'.format(
                             self.stream.port)) from None
@@ -178,6 +188,7 @@ class SerialTalks:
         if not opcode in self.instructions:
             self.instructions[opcode] = instruction
         else:
+            self.logger(ERROR, 'opcode {} is already bound to another instruction'.format(opcode))
             raise KeyError('opcode {} is already bound to another instruction'.format(opcode))
 
     def rawsend(self, rawbytes):
@@ -191,7 +202,7 @@ class SerialTalks:
 
     def send(self, opcode, *args):
         retcode = random.randint(0, 0xFFFFFFFF)
-        content = BYTE(opcode) + ULONG(retcode) + bytes().join(args) 
+        content = BYTE(opcode) + ULONG(retcode) + bytes().join(args)
         # crc calculation
         crc = CRCprocessBuffer(content)
         prefix = MASTER_BYTE + BYTE(len(content)) + USHORT(crc)
@@ -310,6 +321,7 @@ class SerialTalks:
 
     def resend(self, message):
         warnings.warn("Message send corrupted !", SerialTalksWarning)
+        self.logger(WARN,"Message send corrupted !")
         prev_retcode = message.read(ULONG)
         to_send, old_retcode = None, None
         self.history_lock.acquire()
@@ -317,7 +329,7 @@ class SerialTalks:
             if self.history[i][0] == prev_retcode:
                 to_send = self.history[i][2]
                 main_retcode = self.history[i][1]
-                print("Message resend !")
+                self.logger(WARN,"Message resend !")
                 break
         self.history_lock.release()
         if not to_send is None:
@@ -345,7 +357,7 @@ class SerialTalks:
             self.queues_lock.release()
 
 
-        
+
     def getout(self, timeout=0):
         return self.getlog(STDOUT_RETCODE, timeout)
 
@@ -360,6 +372,8 @@ class SerialListener(Thread):
         self.parent = parent
         self.stop = Event()
         self.daemon = True
+
+        self.parent.logger(INFO,'SerialListener Init')
 
     def run(self):
         state = 'waiting'  # ['waiting', 'starting', 'receiving']
