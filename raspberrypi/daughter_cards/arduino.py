@@ -7,6 +7,8 @@ Arduino classes including SerialTalks and SerialTopic.
 from common.serialtalks import *
 from common.components import *
 
+from logs.log_manager import *
+
 _MANAGE_OPCODE = 0X07
 _SUBSCRIBE     = 0X0
 _UNSUBSCRIBE   = 0X1
@@ -17,7 +19,7 @@ def TopicHandler(*args):
 
     args: sorted Deserializer list for extract args from received packet.
 
-    return: 
+    return:
         decorator for encapsulating function with deserialization.
 
     example :
@@ -42,6 +44,9 @@ class Arduino(SerialTalksProxy):
     """
     def __init__(self, server, uuid):
         SerialTalksProxy.__init__(self, server, uuid)
+        self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, log_level)
+
+        self.logger(INFO, 'SerialTalksProxy initialisation success !')
 
     def addTopic(self, topic_code, handler, name, timestep):
         """
@@ -57,14 +62,17 @@ class Arduino(SerialTalksProxy):
         name = name[0].upper() + name.lower()[1:]
 
         if  (not self.__dict__.get("subscribe"+name, None) is None ) or (not self.__dict__.get("unsubscribe"+name, None) is None):
+            self.logger(ERROR, 'Unable to create subscriber method')
             raise RuntimeError("Unable to create subscriber method")
 
         def sub():
+            self.logger(INFO, 'Subscribe to', name, 'topic. timestep =',timestep)
             output = self.execute(
                 _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))
             return bool(output.read(BYTE))
 
         def usub():
+            self.logger(INFO, 'Unsubscribe to', name, 'topic')
             output = self.execute(
                 _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))
             return bool(output.read(BYTE))
@@ -73,6 +81,8 @@ class Arduino(SerialTalksProxy):
         self.__setattr__("unsubscribe"+name, usub)
 
         self.bind(topic_code, handler)
+
+        self.logger(INFO, 'Create', name, 'topic with', timestep,'ms timestep')
 
 class SecureArduino(SecureSerialTalksProxy):
     """
@@ -80,6 +90,9 @@ class SecureArduino(SecureSerialTalksProxy):
     """
     def __init__(self, server, uuid, default_result):
         SecureSerialTalksProxy.__init__(self, server, uuid, default_result)
+        self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, log_level)
+
+        self.logger(INFO, 'SecureSerialTalksProxy initialisation success !')
 
     def addTopic(self, topic_code, handler, name, timestep):
         """
@@ -95,14 +108,17 @@ class SecureArduino(SecureSerialTalksProxy):
         name = name[0].upper() + name.lower()[1:]
 
         if  (not self.__dict__.get("subscribe"+name, None) is None ) or (not self.__dict__.get("unsubscribe"+name, None) is None):
+            self.logger(ERROR, 'Unable to create subscriber method')
             raise RuntimeError("Unable to create subscriber method")
 
         def sub():
+            self.logger(INFO, 'Subscribe to', name, 'topic. timestep =',timestep)
             output = self.execute(
                 _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))
             return bool(output.read(BYTE))
 
         def usub():
+            self.logger(INFO, 'Unsubscribe to', name, 'topic')
             output = self.execute(
                 _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))
             return bool(output.read(BYTE))
@@ -112,12 +128,17 @@ class SecureArduino(SecureSerialTalksProxy):
 
         self.bind(topic_code, handler)
 
+        self.logger(INFO, 'Create', name, 'topic with', timestep,'ms timestep')
+
 class ArduinoLocal(SerialTalks):
     """
     Arduino class including serialtalks proxy and serialtopic gesture with default func result.
     """
-    def __init__(self, port):
+    def __init__(self, port, log_level=DEBUG):
         SerialTalks.__init__(self, port)
+        self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, log_level)
+
+        self.logger(INFO, 'SerialTalks initialisation success !')
 
     def addTopic(self, topic_code, handler, name, timestep):
         """
@@ -133,21 +154,26 @@ class ArduinoLocal(SerialTalks):
         name = name[0].upper() + name.lower()[1:]
 
         if  (not self.__dict__.get("subscribe"+name, None) is None ) or (not self.__dict__.get("unsubscribe"+name, None) is None):
+            self.logger(ERROR, 'Unable to create subscriber method')
             raise RuntimeError("Unable to create subscriber method")
 
         def sub():
+            self.logger(INFO, 'Subscribe to', name, 'topic. timestep =',timestep)
             output = self.execute(
                 _MANAGE_OPCODE, BYTE(_SUBSCRIBE), BYTE(topic_code), LONG(timestep))
             return bool(output.read(BYTE))
 
         def usub():
+            self.logger(INFO, 'Unsubscribe to', name, 'topic')
             output = self.execute(
-                _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))   
+                _MANAGE_OPCODE, BYTE(_UNSUBSCRIBE),  BYTE(topic_code))
             return bool(output.read(BYTE))
 
         self.__setattr__("subscribe"+name, sub)
         self.__setattr__("unsubscribe"+name, usub)
 
         self.bind(topic_code, handler)
+
+        self.logger(INFO, 'Create', name, 'topic with', timestep,'ms timestep')
 
 
