@@ -85,7 +85,7 @@ class SerialTalksWarning(UserWarning, ConnectionError): pass
 
 class SerialTalks:
 
-    def __init__(self, port, log_level=DEBUG):
+    def __init__(self, port, exec_param=Logger.SHOW, log_level=DEBUG):
         # Serial things
         self.port = port
         self.is_connected = False
@@ -101,9 +101,10 @@ class SerialTalks:
         self.instructions = dict()
         self.instructions[RESEND_OPCODE] = self.resend
 
-        self.logger = LogManager().getlogger(self.__class__.__name__, Logger.BOTH, log_level)
+        self.logger = LogManager().getlogger(
+            self.__class__.__name__, exec_param, log_level)
 
-        self.logger(INFO, 'Initialisation success !')
+        self.logger(INFO, 'SerialTalks initialisation success !')
 
 
     def __enter__(self):
@@ -115,7 +116,7 @@ class SerialTalks:
 
     def connect(self, timeout=5):
         if self.is_connected:
-            self.logger(WARN, '{} is already connected'.format(self.port))
+            self.logger(WARNING, '{} is already connected'.format(self.port))
             raise AlreadyConnectedError('{} is already connected'.format(self.port))
 
         # Connect to the serial port
@@ -124,7 +125,7 @@ class SerialTalks:
                                         parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
             self.stream.timeout = 1
         except SerialException as e:
-            self.logger(ERROR, 'Connection Failed error',str(e))
+            self.logger(ERROR, 'Connection Failed error', str(e))
             raise ConnectionFailedError(str(e)) from None
 
         self.serial_buffer = SerialBuffer(self.stream.write, inf)
@@ -150,7 +151,7 @@ class SerialTalks:
                 if time.monotonic() - startingtime > timeout:
                     self.disconnect()
                     self.logger(ERROR, '\'{}\' is mute. It may not be an Arduino or it\'s sketch may not be correctly loaded.'.format(
-                            self.stream.port))
+                        self.stream.port))
                     raise MuteError(
                         '\'{}\' is mute. It may not be an Arduino or it\'s sketch may not be correctly loaded.'.format(
                             self.stream.port)) from None
@@ -159,6 +160,8 @@ class SerialTalks:
 
             except NotConnectedError:
                 self.is_connected = False
+
+        self.logger(INFO, 'Connected to {} !'.format(self.stream.port))
 
     def disconnect(self):
         # remove free buffer instruction to avoid unexpected call when port is closed
@@ -209,12 +212,11 @@ class SerialTalks:
         self.history_lock.acquire()
         self.history.append((self.last_retcode, retcode, [opcode, args]))
         self.last_retcode = retcode
-        if len(self.history)>20:
-            _  = self.history.pop(0)
+        if len(self.history) > 20:
+            _ = self.history.pop(0)
         self.history_lock.release()
         self.rawsend(prefix + content + BYTE(0))
         return retcode
-
 
     def get_queue(self, retcode):
         self.queues_lock.acquire()
@@ -252,6 +254,7 @@ class SerialTalks:
             output = queue.get(block, timeout)
         except Empty:
             if timeout is not None:
+                self.logger(ERROR, 'timeout exceeded')
                 raise TimeoutError('timeout exceeded') from None
             else:
                 return None
@@ -321,7 +324,7 @@ class SerialTalks:
 
     def resend(self, message):
         warnings.warn("Message send corrupted !", SerialTalksWarning)
-        self.logger(WARN,"Message send corrupted !")
+        self.logger(WARNING, "Message send corrupted !")
         prev_retcode = message.read(ULONG)
         to_send, old_retcode = None, None
         self.history_lock.acquire()
@@ -329,7 +332,7 @@ class SerialTalks:
             if self.history[i][0] == prev_retcode:
                 to_send = self.history[i][2]
                 main_retcode = self.history[i][1]
-                self.logger(WARN,"Message resend !")
+                self.logger(WARNING, "Message resend !")
                 break
         self.history_lock.release()
         if not to_send is None:
@@ -356,8 +359,6 @@ class SerialTalks:
             self.alias_retcode[new_retcode] = main_retcode
             self.queues_lock.release()
 
-
-
     def getout(self, timeout=0):
         return self.getlog(STDOUT_RETCODE, timeout)
 
@@ -373,7 +374,7 @@ class SerialListener(Thread):
         self.stop = Event()
         self.daemon = True
 
-        self.parent.logger(INFO,'SerialListener Init')
+        self.parent.logger(INFO, 'SerialListener initialisation success !')
 
     def run(self):
         state = 'waiting'  # ['waiting', 'starting', 'receiving']
@@ -419,9 +420,12 @@ class SerialListener(Thread):
             # Process the above message
             try:
                 if (CRCcheck(buffer, crc_val)):
-                    if type_packet == SLAVE_BYTE: self.parent.process(Deserializer(buffer))
-                    if type_packet == MASTER_BYTE: self.parent.receive(Deserializer(buffer))
+                    if type_packet == SLAVE_BYTE:
+                        self.parent.process(Deserializer(buffer))
+                    if type_packet == MASTER_BYTE:
+                        self.parent.receive(Deserializer(buffer))
                 else:
+                    self.parent.logger(WARNING, "Message send corrupted !")
                     warnings.warn("Message receive corrupted !", SerialTalksWarning)
                     retcode = Deserializer(buffer).read(ULONG)
                     self.parent.re_receive(retcode)
