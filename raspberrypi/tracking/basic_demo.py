@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     # Start logger
     LogManager().start()
-    logger = LogManager().getlogger('aruco_demo', Logger.SHOW, DEBUG)
+    logger = LogManager().getlogger('aruco_demo', Logger.SHOW, INFO)
 
     logger(INFO, 'Init Video Capture')
     videoIn = cv2.VideoCapture(0)
@@ -35,6 +35,8 @@ if __name__ == "__main__":
         if(ids is not None and len(ids) > 0):
             logger(INFO, 'Found', len(ids), 'Markers | ids : ', ids)
 
+        logger(DEBUG, 'corners : ', corners,
+               'rejectedImgPoints : ', rejectedImgPoints)
         # Draw detected maker in green
         aruco.drawDetectedMarkers(image, corners, ids)
         # Draw rejected maker in red
