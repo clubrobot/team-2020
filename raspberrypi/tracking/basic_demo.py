@@ -4,6 +4,8 @@ import cv2.aruco as aruco
 
 from logs.log_manager import *
 
+import time
+
 WAITING_TIME = 10
 MAKER_LEN = 0.1
 DICT_ID = aruco.DICT_4X4_100
@@ -26,6 +28,7 @@ if __name__ == "__main__":
 
     logger(INFO, 'Starting Tag Detection')
     while(videoIn.grab()):
+        start = time.time()
         ret, image = videoIn.retrieve()
 
         # Detect detection parameters
@@ -47,6 +50,8 @@ if __name__ == "__main__":
         cv2.imshow('result', image)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        logger(INFO, '{0:.4g} sec'.format(time.time() - start,)
 
     # Release cam
     videoIn.release()
