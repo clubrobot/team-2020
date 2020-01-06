@@ -51,7 +51,7 @@ if __name__ == "__main__":
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-        logger(INFO, '{0:.4g} sec'.format(time.time() - start,)
+        logger(INFO, '{0:.4g} sec'.format(time.time() - start))
 
     # Release cam
     videoIn.release()
