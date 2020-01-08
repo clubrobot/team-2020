@@ -1,58 +1,37 @@
+
+from imutils.video import VideoStream
+from imutils.video import FPS
+import imutils
 import numpy as np
 import cv2
 import cv2.aruco as aruco
 
 from logs.log_manager import *
+from camera import Camera
+from markers import *
 
-import time
-
-WAITING_TIME = 10
-MAKER_LEN = 0.1
-DICT_ID = aruco.DICT_4X4_100
-
+NUM_FRAMES = 100
 
 if __name__ == "__main__":
 
     # Start logger
     LogManager().start()
-    logger = LogManager().getlogger('aruco_demo', Logger.SHOW, INFO)
 
-    logger(INFO, 'Init Video Capture')
-    videoIn = cv2.VideoCapture(0)
+    cam = Camera()
+    cam.start()
 
-    # Get aruco dict
-    aruco_dict = aruco.Dictionary_get(DICT_ID)
+    detector = MarkersDetection()
+    display = MakersDisplay()
 
-    # Get detection parameters
-    parameters = aruco.DetectorParameters_create()
+    while cam.fps._numFrames < NUM_FRAMES:
 
-    logger(INFO, 'Starting Tag Detection')
-    while(videoIn.grab()):
-        start = time.time()
-        ret, image = videoIn.retrieve()
+        image = cam.read(800)
 
-        # Detect detection parameters
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(
-            image, aruco_dict, parameters=parameters)
+        markers = detector.getMarkers(image)
 
-        if(ids is not None and len(ids) > 0):
-            logger(INFO, 'Found', len(ids), 'Markers | ids : ', ids)
-
-        logger(DEBUG, 'corners : ', corners,
-               'rejectedImgPoints : ', rejectedImgPoints)
-        # Draw detected maker in green
-        aruco.drawDetectedMarkers(image, corners, ids)
-        # Draw rejected maker in red
-        aruco.drawDetectedMarkers(
-            image, rejectedImgPoints, borderColor=(100, 0, 240))
-
-        # Show image result in real time
-        cv2.imshow('result', image)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if(not display.draw(image, markers)):
             break
 
-        logger(INFO, '{0:.4g} sec'.format(time.time() - start))
-
     # Release cam
-    videoIn.release()
+    cam.stop()
     cv2.destroyAllWindows()
