@@ -20,17 +20,13 @@ if __name__ == "__main__":
     cam = Camera()
     cam.start()
 
-    detector = MarkersDetection()
-    display = MakersDisplay()
+    detector = MarkersDetector(display=True)
 
     while cam.fps._numFrames < NUM_FRAMES:
 
         image = cam.read(800)
 
         markers = detector.getMarkers(image)
-
-        if(not display.draw(image, markers)):
-            break
 
     # Release cam
     cam.stop()
