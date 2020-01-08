@@ -8,23 +8,6 @@ from logs.log_manager import *
 Markers = namedtuple('Markers', ['corners', 'ids', 'rejectedImgPoints'])
 
 
-class MarkersDetection():
-    def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
-        self.logger = LogManager().getlogger(
-            self.__class__.__name__, exec_param, log_level)
-
-        self.logger(INFO, 'MarkersDetection Initialisation Success !')
-
-        # Get aruco dict
-        self.dict = aruco.Dictionary_get(aruco.DICT_4X4_100)
-
-        # Get detection parameters
-        self.parameters = aruco.DetectorParameters_create()
-
-    def getMarkers(self, image):
-        return Markers(*aruco.detectMarkers(image, self.dict, parameters=self.parameters))
-
-
 class MakersDisplay():
     def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
         self.logger = LogManager().getlogger(
@@ -51,3 +34,39 @@ class MakersDisplay():
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 return False
         return True
+
+
+class MarkersDetector():
+    def __init__(self, display=False, exec_param=Logger.SHOW, log_level=INFO):
+        self.logger = LogManager().getlogger(
+            self.__class__.__name__, exec_param, log_level)
+
+        self.logger(INFO, 'MarkersDetector Initialisation Success !')
+
+        # Get aruco dict
+        self.dict = aruco.Dictionary_get(aruco.DICT_4X4_100)
+
+        # Get detection parameters
+        self.parameters = aruco.DetectorParameters_create()
+
+        if display:
+            self.display = MakersDisplay(exec_param, log_level)
+        else:
+            self.display = None
+
+    def getMarkers(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        markers = Markers(
+            *aruco.detectMarkers(gray, self.dict, parameters=self.parameters))
+
+        if self.display is not None:
+            self.display.draw(gray, markers)
+        return markers
+
+
+class MarkersPosEstimator():
+    def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
+        self.logger = LogManager().getlogger(
+            self.__class__.__name__, exec_param, log_level)
+
+        self.logger(INFO, 'MarkersPosEstimator Initialisation Success !')
