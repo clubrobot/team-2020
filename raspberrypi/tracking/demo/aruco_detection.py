@@ -1,16 +1,9 @@
-
-from imutils.video import VideoStream
-from imutils.video import FPS
-import imutils
-import numpy as np
 import cv2
 import cv2.aruco as aruco
 
 from logs.log_manager import *
 from tracking.libs.camera import Camera
 from tracking.libs.markers import *
-import time
-NUM_FRAMES = 100000
 
 if __name__ == "__main__":
 
@@ -20,13 +13,21 @@ if __name__ == "__main__":
     cam = Camera()
     cam.start()
 
-    detector = MarkersDetector(display=True)
+    detector = MarkersDetector()
 
-    while cam.fps._numFrames < NUM_FRAMES:
+    while (True):
 
-        image = cam.read(800)
+        frame = cam.read(400)
 
-        markers = detector.getMarkers(image)
+        markers = detector.getMarkers(frame)
+
+        # draw a square around the markers
+        aruco.drawDetectedMarkers(frame, markers.corners)
+
+        # display the resulting frame
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     # Release cam
     cam.stop()
