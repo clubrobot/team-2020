@@ -65,3 +65,6 @@ API/esp32
 
 #log files
 *.log
+
+#jpg files
+*.jpg
