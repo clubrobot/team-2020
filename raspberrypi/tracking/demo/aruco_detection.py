@@ -7,10 +7,10 @@ import cv2
 import cv2.aruco as aruco
 
 from logs.log_manager import *
-from camera import Camera
-from markers import *
-
-NUM_FRAMES = 100
+from tracking.libs.camera import Camera
+from tracking.libs.markers import *
+import time
+NUM_FRAMES = 100000
 
 if __name__ == "__main__":
 
