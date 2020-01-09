@@ -24,13 +24,9 @@ while (True):
     # Markers detection
     markers = detector.getMarkers(frame)
 
-    # font for displaying text (below)
-    font = cv2.FONT_HERSHEY_SIMPLEX
-
     # check if the ids list is not empty
     # if no check is added the code will crash
     if np.all(markers.ids != None):
-
         # estimate pose of each marker and return the values
         pos = positionning.getPositionsFromMarkers(markers)
 
