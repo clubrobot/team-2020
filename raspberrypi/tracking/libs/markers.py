@@ -69,4 +69,10 @@ class MarkersPosEstimator():
         self.logger = LogManager().getlogger(
             self.__class__.__name__, exec_param, log_level)
 
+        self.cameraMatrix = None
+        self.distCoefs = None
+
+        self.rvec = None
+        self.tvec = None
+
         self.logger(INFO, 'MarkersPosEstimator Initialisation Success !')
