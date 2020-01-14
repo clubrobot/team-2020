@@ -18,8 +18,10 @@ class Camera(VideoStream):
         self.logger(INFO, 'Starting Camera !')
         super().start()
 
-    def read(self, width=400):
-        image = imutils.resize(super().read(), width=width)
+    def read(self, width=None):
+        image = super().read()
+        if width is not None:
+            image = imutils.resize(image, width=width)
         self.fps.update()
         return image.copy()
 
