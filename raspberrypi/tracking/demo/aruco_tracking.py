@@ -20,7 +20,7 @@ if __name__ == "__main__":
     ref = ReferenceMarker(42, 0.02, Point(0.125, 0.150, 0.0), 90)
 
     tracker = RobotsTracker(cap, ref)
-    images = glob.glob('*.jpg')
+    images = glob.glob('Pictures/*.jpg')
 
     # ------------------ ARUCO TRACKER ---------------------------
     # For each pictures
