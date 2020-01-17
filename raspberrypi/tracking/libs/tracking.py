@@ -61,7 +61,7 @@ class RobotsTracker:
         self.calibrationMatrix = None
 
         self.display = ArucoDisplay(
-            self.camera_matrix, self.dist_matrix, wait=0)
+            self.camera_matrix, self.dist_matrix, wait=1)
 
         self.logger(INFO, 'RobotsTracker Initialisation Success !')
 
