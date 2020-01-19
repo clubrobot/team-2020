@@ -4,10 +4,8 @@ from time import sleep
 import cv2
 import cv2.aruco as aruco
 from collections import namedtuple
-from measurement.measures import Distance
 
 Point = namedtuple('Point', ['x', 'y', 'z'])
-
 
 class Marker:
     """
@@ -20,14 +18,22 @@ class Marker:
         """
         self.identifier = identifier
         self.size = size  # mm
+        self.dictionnary = dictionnary
 
+class MarkerList:
+    def __init__(self, ids, size, dictionnary=aruco.DICT_4X4_100):
+        self.markers = list()
+        self.size = len(ids)
+
+        for i in range(0, self.size):
+            self.markers.append(Marker(ids[i], size, dictionnary))
 
 class ReferenceMarker(Marker):
-    def __init__(self, identifier, size, pos, rotAngle=None):
+    def __init__(self, identifier, size, pos, rotAngle=None, dictionnary=aruco.DICT_4X4_100):
         """
             Init reference marker
         """
-        Marker.__init__(self, identifier, size)
+        Marker.__init__(self, identifier, size, dictionnary)
         self.pos = pos
         if rotAngle is None:
             self.matrix = np.float32([[1, 0, 0, self.pos.x],
