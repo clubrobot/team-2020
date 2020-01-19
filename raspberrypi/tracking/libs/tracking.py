@@ -125,7 +125,10 @@ class RobotsTracker:
                 p = self._getPointMilimeters(rvec[i], tvec[i])
                 self.logger(INFO,'id :', ids[i], '| pos : ', p)
 
-            self.display.show(frame)
+            if not self.display.show(frame):
+                self.camera.stop()
+                sleep(0.5)
+                sys.exit(0)
 
     def compute(self):
         """
@@ -144,10 +147,14 @@ class RobotsTracker:
             self.display.drawDetectedMarkers(frame, corners)
 
             for i in range(0, ids.size):
-                p = self._getPointMilimeters(rvec[i], tvec[i])
-                self.logger(INFO,'id :', ids[i], '| pos : ', p)
+                if ids[i] != self.refMarker.identifier:
+                    p = self._getPointMilimeters(rvec[i], tvec[i])
+                    self.logger(INFO,'id :', ids[i], '| pos : ', p)
 
-            self.display.show(frame)
+            if not self.display.show(frame):
+                self.camera.stop()
+                sleep(0.5)
+                sys.exit(0)
 
     def _getPointMilimeters(self, rvec, tvec):
         """
@@ -176,13 +183,11 @@ class RobotsTracker:
             4. Convert point to millimeters, round it and return it
         """
         try:
-            t = tvec[0]
-            R = cv2.Rodrigues(rvec)[0]
+            R = np.float32(cv2.Rodrigues(rvec)[0])
+            t = np.float32(tvec[0]).reshape(3,1)
 
-            Rmarker = np.float32([[R[0, 0], R[0, 1], R[0, 2], t[0]],
-                                [R[1, 0], R[1, 1], R[1, 2], t[1]],
-                                [R[2, 0], R[2, 1], R[2, 2], t[2]],
-                                [0, 0, 0, 1]])
+            Rmarker = np.concatenate((R, t), axis = 1)
+            Rmarker = np.vstack([Rmarker, np.float32([0,0,0,1])])
 
             point = (np.matmul(np.matmul(self.refMarker.matrix,
                                         self.calibrationMatrix), Rmarker)).dot([0, 0, 0, 1])
@@ -232,13 +237,11 @@ class RobotsTracker:
             rvec, tvec, _ = aruco.estimatePoseSingleMarkers(
                 corners[index], self.refMarker.size, self.camera_matrix, self.dist_matrix)
 
-            R = cv2.Rodrigues(rvec)[0]
-            t = tvec[0][0]
+            R = np.float32(cv2.Rodrigues(rvec)[0])
+            t = np.float32(tvec[0][0]).reshape(3,1)
 
-            Rcal = np.float32([ [R[0, 0], R[0, 1], R[0, 2], t[0]],
-                                [R[1, 0], R[1, 1], R[1, 2], t[1]],
-                                [R[2, 0], R[2, 1], R[2, 2], t[2]],
-                                [   0   ,    0   ,    0   ,   1 ]])
+            Rcal = np.concatenate((R, t), axis = 1)
+            Rcal = np.vstack([Rcal, np.float32([0,0,0,1])])
 
             return np.linalg.inv(Rcal)
         except:

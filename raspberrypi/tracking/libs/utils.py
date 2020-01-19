@@ -72,5 +72,5 @@ class ArucoDisplay:
         cv2.imshow('frame', frame)
         if cv2.waitKey(self.wait) & 0xFF == ord('q'):
             cv2.destroyAllWindows()
-            sleep(0.2)
-            sys.exit(0)
+            return False
+        return True
