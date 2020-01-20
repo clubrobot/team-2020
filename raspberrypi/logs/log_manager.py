@@ -5,7 +5,7 @@ import os
 from select import select
 from time import time
 from multiprocessing import Process, Pipe, Lock
-from common.singleton import Singleton
+from common.metaclass import Singleton
 
 from logs.utils.types import *
 from logs.utils.colors import *
