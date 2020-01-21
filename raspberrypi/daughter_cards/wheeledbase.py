@@ -4,9 +4,10 @@
 import time
 import math
 
-from common.serialtalks import BYTE, LONG, FLOAT
-from common.components import SecureSerialTalksProxy
 from common.serialutils import Deserializer
+from common.serialtalks import BYTE, LONG, FLOAT
+from daughter_cards.arduino import SecureArduino
+
 
 # Instructions
 SET_VELOCITIES_OPCODE           = 0x10
@@ -75,7 +76,7 @@ PUREPURSUIT_LOOKAHEADBIS_ID     = 0xE2
 
 
 
-class WheeledBase(SecureSerialTalksProxy):
+class WheeledBase(SecureArduino):
 
     _DEFAULT = {
         GET_CODEWHEELS_COUNTERS_OPCODE : Deserializer(LONG(0) + LONG(0)),
@@ -102,7 +103,7 @@ class WheeledBase(SecureSerialTalksProxy):
         def set(self, value): self.parent.set_parameter_value(self.id, value, self.type)
 
     def __init__(self, parent, uuid='wheeledbase'):
-        SecureSerialTalksProxy.__init__(self, parent, uuid, WheeledBase._DEFAULT)
+        SecureArduino.__init__(self, parent, uuid, WheeledBase._DEFAULT)
 
         self.left_wheel_radius              = WheeledBase.Parameter(self, LEFTWHEEL_RADIUS_ID, FLOAT)
         self.left_wheel_constant            = WheeledBase.Parameter(self, LEFTWHEEL_CONSTANT_ID, FLOAT)

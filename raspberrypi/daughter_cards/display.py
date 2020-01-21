@@ -5,7 +5,7 @@ import time
 import math
 
 from common.serialtalks import BYTE, INT, CHAR, STRING
-from common.components import SecureSerialTalksProxy
+from daughter_cards.arduino import SecureArduino
 
 # Instructions
 
@@ -25,10 +25,10 @@ LEFT_ROTATION_MODE = 3
 UPSIDEDOWN_MODE = 4
 
 
-class LEDMatrix(SecureSerialTalksProxy):
+class LEDMatrix(SecureArduino):
 
     def __init__(self, parent, matrix_id, uuid='display'):
-        SecureSerialTalksProxy.__init__(self, parent, uuid, dict())
+        SecureArduino.__init__(self, parent, uuid, dict())
         self.matrix_id = matrix_id
 
     def set_message(self, message, mode=None, speed=None):
@@ -97,10 +97,10 @@ class LEDMatrix(SecureSerialTalksProxy):
             time.sleep(0.1)
 
 
-class SevenSegments(SecureSerialTalksProxy):
+class SevenSegments(SecureArduino):
 
     def __init__(self, parent, uuid='display'):
-        SecureSerialTalksProxy.__init__(self, parent, uuid, dict())
+        SecureArduino.__init__(self, parent, uuid, dict())
 
     def set_message(self, message):
         if len(message.replace('.', '')) > 12:
