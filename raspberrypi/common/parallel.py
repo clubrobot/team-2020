@@ -16,12 +16,12 @@ class Thread(th.Thread, metaclass=Final):
     """ 
         A custom Thread implementation that use log library in order to catch every crash errors.
         It's prohibited to inherit this class because the run overriting destroy the error catching.
-        
     """ 
 
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs=None, log=True, daemon=None):
-        """This constructor should always be called with keyword arguments. Arguments are:
+        """
+        This constructor should always be called with keyword arguments. Arguments are:
 
         *group* should be None; reserved for future extension when a ThreadGroup
         class is implemented.
@@ -54,7 +54,8 @@ class Thread(th.Thread, metaclass=Final):
 
 
     def start(self):
-        """Start the thread's activity.
+        """
+        Start the thread's activity.
 
         It must be called at most once per thread object. It arranges for the
         object's run() method to be invoked in a separate thread of control.
@@ -68,7 +69,8 @@ class Thread(th.Thread, metaclass=Final):
 
 
     def run(self):
-        """Method representing the thread's activity.
+        """
+        Method representing the thread's activity.
 
         DO NOT OVERRIDE THIS METHOD
 
@@ -85,7 +87,8 @@ class Thread(th.Thread, metaclass=Final):
             self.logger(CRITICAL,self.name,"Error on thread !!", "\n", error=''.join(traceback.format_list(traceback.extract_tb(tb))),type= etype.__name__, value=str(value))
 
     def join(self, timeout=None):
-        """Wait until the thread terminates.
+        """
+        Wait until the thread terminates.
 
         This blocks the calling thread until the thread whose join() method is
         called terminates -- either normally or through an unhandled exception
@@ -112,7 +115,8 @@ class Thread(th.Thread, metaclass=Final):
         return th.Thread.join(self,timeout=timeout)
 
     def is_alive(self):
-        """Return whether the thread is alive.
+        """
+        Return whether the thread is alive.
 
         This method returns True just before the run() method starts until just
         after the run() method terminates. The module function enumerate()
