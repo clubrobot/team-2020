@@ -7,7 +7,7 @@ import math
 
 from common.serialutils import Deserializer
 from common.serialtalks import BYTE, INT, LONG, FLOAT, SerialTalks
-from common.components import SecureSerialTalksProxy
+from daughter_cards.arduino import SecureArduino
 
 GET_RSOC_OPCODE = 0x04
 GET_ASOC_OPCODE = 0x05
@@ -20,11 +20,11 @@ GET_AVERAGE_TIME_EMPTY_OPCODE = 0x0B
 GET_AVERAGE_TIME_FULL_OPCODE = 0x0C
 
 
-class BMS(SecureSerialTalksProxy):
+class BMS(SecureArduino):
     _DEFAULT = {GET_RSOC_OPCODE: Deserializer(INT(100))}
 
     def __init__(self, parent, uuid='/tmp/arduino/BMS'):
-        SecureSerialTalksProxy.__init__(self, parent, uuid, BMS._DEFAULT)
+        SecureArduino.__init__(self, parent, uuid, BMS._DEFAULT)
 
     def get_relative_soc(self):
         output = self.execute(GET_RSOC_OPCODE)

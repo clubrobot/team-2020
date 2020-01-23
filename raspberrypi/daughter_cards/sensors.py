@@ -4,7 +4,7 @@ import time
 import math
 from common.serialutils import Deserializer
 from common.serialtalks import BYTE, INT, LONG, FLOAT
-from common.components import SecureSerialTalksProxy
+from daughter_cards.arduino import SecureArduino
 from robots.get_robot_name import *
 # Instructions
 
@@ -16,7 +16,7 @@ _GET_LEFT_SWITCH_OPCODE = 0x14
 _GET_RIGHT_SWITCH_OPCODE = 0x15
 
 
-class Sensors(SecureSerialTalksProxy):
+class Sensors(SecureArduino):
     # Default execute result
     _DEFAULT = {_GET_LEFT_SWITCH_OPCODE: Deserializer(BYTE(0)),
                 _GET_RIGHT_SWITCH_OPCODE: Deserializer(BYTE(0)),
@@ -24,7 +24,7 @@ class Sensors(SecureSerialTalksProxy):
                 _GET_MESURE_SENSOR_OPCODE: Deserializer(INT(1000) + INT(1000))}
 
     def __init__(self, parent, uuid='sensors'):
-        SecureSerialTalksProxy.__init__(self, parent, uuid, Sensors._DEFAULT)
+        SecureArduino.__init__(self, parent, uuid, Sensors._DEFAULT)
 
     def get_normal(self, delta_time):
         output = self.execute(_GET_NORMAL_OPCODE, INT(delta_time))

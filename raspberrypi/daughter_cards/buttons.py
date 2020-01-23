@@ -5,13 +5,13 @@ import time
 import math
 
 from common.serialtalks import BYTE, INT, LONG, FLOAT
-from common.components import SerialTalksProxy
+from daughter_cards.arduino import Arduino
 
 LED_ON_OPCODE = 0x11
 LED_OFF_OPCODE = 0x12
 
 
-class ButtonCard(SerialTalksProxy):
+class ButtonCard(Arduino):
     BUTTON_ID = 1
     RED_BUTTON = 3
     GREEN_BUTTON = 2
@@ -23,7 +23,7 @@ class ButtonCard(SerialTalksProxy):
     TIRETTE = 8
 
     def __init__(self, parent, uuid='buttonCard'):
-        SerialTalksProxy.__init__(self, parent, uuid)
+        Arduino.__init__(self, parent, uuid)
         self.functions = dict()
         self.bind(1, self._compute)
 
