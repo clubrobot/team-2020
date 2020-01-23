@@ -48,11 +48,14 @@ class LogManager(metaclass=Singleton):
         # Initial log time
         self.initial_time = time()
 
+        # Lock
+        self.lock = Lock()
+
     def initLogger(self, name, exec_param, level_disp):
         """
         Send Init command to the Worker Process on the specific logger proxy creation
         """
-        if self.worker.is_alive():
+        if self._check_pid():
             self.__send(LogCommand(self.INIT, LogInit(name, exec_param, level_disp)))
         else:
             pass
@@ -61,7 +64,7 @@ class LogManager(metaclass=Singleton):
         """
         Send Write command to the Worker Process with the specific logger message
         """
-        if self.worker.is_alive():
+        if self._check_pid():
             t = str("[{0:.3g}]".format(time() - self.initial_time))
             self.__send(LogCommand(self.WRITE_LOG, LogMsg(t, level, name, args, kwargs)))
 
@@ -69,7 +72,7 @@ class LogManager(metaclass=Singleton):
         """
         Reset Time
         """
-        if self.worker.is_alive():
+        if self._check_pid():
             self.initial_time = time()
         else:
             pass
@@ -80,12 +83,14 @@ class LogManager(metaclass=Singleton):
             exec_param : SHOW, WRITE or BOTH
             level_disp : DEBUG, INFO, WARNING, ERROR, CRITICAL
         """
-        if not self.worker.is_alive():
+        if not self._check_pid():
+            self.lock.acquire()
             print(colorise('---------------------------------------------------------------------------',color=Colors.RED))
             print(colorise('('+name+') WARNING : LogWorker is not running, no log will be saved !',color=Colors.RED,car_attr=Colors.BOLD))
             print(colorise('Try to Use :\n\r\tlog.start()',color=Colors.YELLOW))
             print(colorise('At the begginning of your app if you want to store logs',color=Colors.YELLOW))
             print(colorise('---------------------------------------------------------------------------',color=Colors.RED))
+            self.lock.release()
         return Logger(self, name, exec_param, level_disp)
 
     def start(self):
@@ -105,6 +110,20 @@ class LogManager(metaclass=Singleton):
             self.worker.terminate()
         except:
             pass
+
+    def _check_pid(self):
+        """
+        Check For the existence of a unix pid. 
+        """
+        try:
+            if self.worker.pid is not None:
+                os.kill(self.worker.pid, 0)
+            else:
+                return False
+        except OSError:
+            return False
+        else:
+            return True
 
     # send pipe message
     def __send(self, obj):
@@ -154,3 +173,24 @@ class Logger:
         Reset Parent Time
         """
         self.parent.reset_time()
+
+if __name__ == "__main__":
+    def f(name):
+        loggerf = LogManager().getlogger('f')
+        for i in range(0,1000):
+            loggerf(CRITICAL, 'hello', name)
+
+    def g(name):
+        loggerg = LogManager().getlogger('g')
+        for i in range(0,1000):
+            loggerg(CRITICAL, 'hello', name)
+
+    LogManager().start()
+    p = Process(target=f, args=('bob',))
+    q = Process(target=g, args=('world',))
+    p.start()
+    q.start()
+    p.join()
+    q.join()
+
+    input()
