@@ -1,4 +1,4 @@
-from imutils.video import VideoStream
+from tracking.utils.videostream import VideoStream
 from imutils.video import FPS
 import imutils
 
