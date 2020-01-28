@@ -13,17 +13,20 @@ from common.metaclass import Singleton
 
 from logs.log_manager import *
 from tracking.libs.utils import *
+from tracking.libs.display import *
 from tracking.libs.worker import *
+
 
 class TrackingManager(metaclass=Singleton):
 
-    #Worker Command
-    SETUP                   = 0
-    START_TRACKING          = 1
-    STOP_TRACKING           = 2
-    RECALIBRATE             = 3
-    GET_CALIBRATION_FLAG    = 4
-    GET_POS                 = 5
+    # Worker Command
+    SETUP = 0
+    START_TRACKING = 1
+    STOP_TRACKING = 2
+    RECALIBRATE = 3
+    GET_CALIBRATION_FLAG = 4
+    GET_POS = 5
+    GET_FRAME = 6
 
     def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
         """
@@ -35,16 +38,21 @@ class TrackingManager(metaclass=Singleton):
         # Lock
         self.lock = Lock()
 
-        self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
+        self.logger = LogManager().getlogger(
+            self.__class__.__name__, exec_param, log_level)
+
+        # debug display
+        self.display = ArucoDisplay(wait=1)
 
         self.logger(INFO, 'TrackingManager Initialisation Success !')
 
-    def setup(self, refMarker, markerList=None, dictionnary=aruco.DICT_4X4_100):
+    def setup(self, refMarker, markerList=None, debug=False, dictionnary=aruco.DICT_4X4_100):
         """
         Send Init command to the Worker Process on the specific logger proxy creation
         """
         if self._check_pid():
-            self._send(Command(self.SETUP, InitMsg(refMarker, markerList, dictionnary)))
+            self._send(Command(self.SETUP, InitMsg(
+                refMarker, markerList, debug, dictionnary)))
             ret = self._recv(timeout=5)
             if ret:
                 self.logger(INFO, 'Setup sucessful !')
@@ -82,6 +90,19 @@ class TrackingManager(metaclass=Singleton):
         self.logger(INFO, 'Recalibration fail !')
         return False
 
+    def getFrame(self):
+        if self._check_pid():
+            self._send(Command(self.GET_FRAME, None))
+            return self._recv(timeout=1)
+        else:
+            return None
+
+    def show(self):
+        try:
+            self.display.show(self.getFrame())
+        except:
+            pass
+
     def start(self):
         """
         Start Worker Process
@@ -115,7 +136,7 @@ class TrackingManager(metaclass=Singleton):
         else:
             return True
 
-    def _recv(self, timeout = None):
+    def _recv(self, timeout=None):
         """
             Blocking recieve that permit to avoid some Pipe polling limitation
         """
