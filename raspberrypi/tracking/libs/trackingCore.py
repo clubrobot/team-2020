@@ -11,6 +11,7 @@ from tracking.libs.utils import *
 from tracking.libs.display import *
 from tracking.libs.markers import *
 
+
 class TrackingCore(Thread):
     """
         This class purpose is to track robots positions on a map
@@ -37,7 +38,7 @@ class TrackingCore(Thread):
 
     """
 
-    def __init__(self, camera, refMarker, markerList=None, dictionnary=aruco.DICT_4X4_100, exec_param=Logger.SHOW, log_level=INFO):
+    def __init__(self, camera, refMarker, markerList=None, debug=False, dictionnary=aruco.DICT_4X4_100, exec_param=Logger.SHOW, log_level=INFO):
         """
             Init all Tracker Components
         """
@@ -45,7 +46,8 @@ class TrackingCore(Thread):
 
         self.deamon = True
 
-        self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
+        self.logger = LogManager().getlogger(
+            self.__class__.__name__, exec_param, log_level)
 
         try:
             # File storage in OpenCV
@@ -58,7 +60,8 @@ class TrackingCore(Thread):
             # release file
             cv_file.release()
         except:
-            self.logger(ERROR, 'No calibration file found, try to run calibration script before')
+            self.logger(
+                ERROR, 'No calibration file found, try to run calibration script before')
             sleep(0.2)
             sys.exit(1)
 
@@ -73,6 +76,8 @@ class TrackingCore(Thread):
         self.refMarker = refMarker
         self.markerList = markerList
 
+        self.debug = debug
+
         self.calibrationMatrix = None
 
         self.stop = Event()
@@ -81,7 +86,9 @@ class TrackingCore(Thread):
         self.calibrated = Event()
         self.calibrated.clear()
 
-        self.display = ArucoDisplay(self.camera_matrix, self.dist_matrix, wait=1)
+        self.lock = Lock()
+
+        self.currentFrame = None
 
         self.logger(INFO, 'Tracker Initialisation Success !')
 
@@ -91,6 +98,9 @@ class TrackingCore(Thread):
         """
         self.stop.set()
         self.join()
+
+    def get_current_frame(self):
+        return self.currentFrame
 
     def is_calibrated(self):
         """
@@ -111,51 +121,64 @@ class TrackingCore(Thread):
         while not self.stop.is_set():
             if not self.is_calibrated():
                 if self.calibrate():
-                    self.logger(INFO,'Calibration Done')
+                    self.logger(INFO, 'Calibration Done')
                     self.calibrated.set()
                 else:
-                    self.logger(INFO,'Waiting for calibration')
+                    self.logger(INFO, 'Waiting for calibration')
                     sleep(1)
             else:
                 self.compute()
 
+        self.camera.stop()
 
     def calibrate(self):
         """
             Calibrate method to get calibration matrix from camera
         """
         # Get frames
-        _, gray = self._getFrame()
+        frame, gray = self._getFrame()
 
         # Detect Markers
-        corners, ids, _ = aruco.detectMarkers(gray, self.dict, parameters=self.parameters)
+        corners, ids, _ = aruco.detectMarkers(
+            gray, self.dict, parameters=self.parameters)
 
         index = self._getMarkerIndex(ids, self.refMarker.identifier)
 
         if index is not None:
             self.calibrationMatrix = self._getCalibrationMatrix(corners, index)
 
+            if self.debug:
+                aruco.drawDetectedMarkers(frame, corners)
+                self._updateCurrentFrame(frame)
+
             if self.calibrationMatrix is not None:
                 return True
         else:
+            if self.debug:
+                self._updateCurrentFrame(frame)
             return False
 
     def compute(self):
         # Get frame
         frame, gray = self._getFrame()
         # Detect Markers
-        corners, ids, _ = aruco.detectMarkers(gray, self.dict, parameters=self.parameters)
+        corners, ids, _ = aruco.detectMarkers(
+            gray, self.dict, parameters=self.parameters)
 
         if np.all(ids != None):
             rvec, tvec, _ = aruco.estimatePoseSingleMarkers(
                 corners, self.refMarker.size, self.camera_matrix, self.dist_matrix)
 
-            self.display.drawDetectedMarkers(frame, corners)
+            if self.debug:
+                aruco.drawDetectedMarkers(frame, corners)
 
             for i in range(0, ids.size):
                 if ids[i] != self.refMarker.identifier:
                     p = self._getPointMilimeters(rvec[i], tvec[i])
-                    self.logger(INFO,'id :', ids[i], '| pos : ', p)
+                    self.logger(INFO, 'id :', ids[i], '| pos : ', p)
+
+        if self.debug:
+            self._updateCurrentFrame(frame)
 
     def _getPointMilimeters(self, rvec, tvec):
         """
@@ -185,13 +208,13 @@ class TrackingCore(Thread):
         """
         try:
             R = np.float32(cv2.Rodrigues(rvec)[0])
-            t = np.float32(tvec[0]).reshape(3,1)
+            t = np.float32(tvec[0]).reshape(3, 1)
 
-            Rmarker = np.concatenate((R, t), axis = 1)
-            Rmarker = np.vstack([Rmarker, np.float32([0,0,0,1])])
+            Rmarker = np.concatenate((R, t), axis=1)
+            Rmarker = np.vstack([Rmarker, np.float32([0, 0, 0, 1])])
 
             point = (np.matmul(np.matmul(self.refMarker.matrix,
-                                        self.calibrationMatrix), Rmarker)).dot([0, 0, 0, 1])
+                                         self.calibrationMatrix), Rmarker)).dot([0, 0, 0, 1])
 
             return round(point[0]*1000), round(point[1]*1000), round(point[2]*1000)
         except:
@@ -213,6 +236,11 @@ class TrackingCore(Thread):
         """
         frame = self.camera.read(width=800)
         return (frame, cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
+
+    def _updateCurrentFrame(self, frame):
+        self.lock.acquire()
+        self.currentFrame = frame.copy()
+        self.lock.release()
 
     def _getCalibrationMatrix(self, corners, index):
         """
@@ -239,10 +267,10 @@ class TrackingCore(Thread):
                 corners[index], self.refMarker.size, self.camera_matrix, self.dist_matrix)
 
             R = np.float32(cv2.Rodrigues(rvec)[0])
-            t = np.float32(tvec[0][0]).reshape(3,1)
+            t = np.float32(tvec[0][0]).reshape(3, 1)
 
-            Rcal = np.concatenate((R, t), axis = 1)
-            Rcal = np.vstack([Rcal, np.float32([0,0,0,1])])
+            Rcal = np.concatenate((R, t), axis=1)
+            Rcal = np.vstack([Rcal, np.float32([0, 0, 0, 1])])
 
             return np.linalg.inv(Rcal)
         except:
