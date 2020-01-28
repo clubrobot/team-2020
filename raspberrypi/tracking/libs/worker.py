@@ -14,13 +14,14 @@ from tracking.libs.trackingCore import *
 
 class TrackingWorker(Process):
 
-    #Worker Command
-    SETUP                   = 0
-    START_TRACKING          = 1
-    STOP_TRACKING           = 2
-    RECALIBRATE             = 3
-    GET_CALIBRATION_FLAG    = 4
-    GET_POS                 = 5
+    # Worker Command
+    SETUP = 0
+    START_TRACKING = 1
+    STOP_TRACKING = 2
+    RECALIBRATE = 3
+    GET_CALIBRATION_FLAG = 4
+    GET_POS = 5
+    GET_FRAME = 6
 
     def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
         """
@@ -41,7 +42,8 @@ class TrackingWorker(Process):
         self.stop = Event()
         self.stop.clear()
 
-        self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
+        self.logger = LogManager().getlogger(
+            self.__class__.__name__, exec_param, log_level)
 
         self.logger(INFO, 'TrackingWorker Initialisation Success !')
 
@@ -54,7 +56,8 @@ class TrackingWorker(Process):
             msg = self._recv()
 
             if msg.cmd == self.SETUP:
-                self._setup(msg.args.refMarker, msg.args.markerList, msg.args.dictionnary)
+                self._setup(msg.args.refMarker,
+                            msg.args.markerList, msg.args.debug, msg.args.dictionnary)
                 self._send(True)
 
             if msg.cmd == self.START_TRACKING:
@@ -85,10 +88,13 @@ class TrackingWorker(Process):
             if msg.cmd == self.GET_POS:
                 pass
 
+            if msg.cmd == self.GET_FRAME:
+                self._send(self.tracking.get_current_frame())
+
             # delete message
             del msg
 
-    def _setup(self, refMarker, markerList, dictionnary):
+    def _setup(self, refMarker, markerList, debug, dictionnary):
         """
             Internal method to initialise proces dependent components.
         """
@@ -98,9 +104,10 @@ class TrackingWorker(Process):
         self.camera.start()
 
         # Creating Tracker component
-        self.tracking = TrackingCore(self.camera, refMarker, markerList, dictionnary)
+        self.tracking = TrackingCore(
+            self.camera, refMarker, markerList, debug, dictionnary)
 
-    def _recv(self, timeout = None):
+    def _recv(self, timeout=None):
         """
             Blocking recieve that permit to avoid some Pipe polling limitation
         """
