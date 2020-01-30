@@ -55,12 +55,12 @@ class TrackingWorker(Process):
             # get the last message
             msg = self._recv()
 
-            if msg.cmd == self.SETUP:
+            if msg is not None and msg.cmd == self.SETUP:
                 self._setup(msg.args.refMarker,
                             msg.args.markerList, msg.args.debug, msg.args.dictionnary)
                 self._send(True)
 
-            if msg.cmd == self.START_TRACKING:
+            if msg is not None and msg.cmd == self.START_TRACKING:
                 if hasattr(self, 'tracking'):
                     self.tracking.start()
                     if self.tracking.isAlive():
@@ -70,7 +70,7 @@ class TrackingWorker(Process):
                 else:
                     self._send(False)
 
-            if msg.cmd == self.STOP_TRACKING:
+            if msg is not None and msg.cmd == self.STOP_TRACKING:
                 if hasattr(self, 'tracking'):
                     if self.tracking.isAlive():
                         self.tracking.terminate()
@@ -78,17 +78,17 @@ class TrackingWorker(Process):
                 else:
                     self._send(False)
 
-            if msg.cmd == self.RECALIBRATE:
+            if msg is not None and msg.cmd == self.RECALIBRATE:
                 self.tracking.recalibrate()
                 self._send(True)
 
-            if msg.cmd == self.GET_CALIBRATION_FLAG:
+            if msg is not None and msg.cmd == self.GET_CALIBRATION_FLAG:
                 self._send(self.tracking.is_calibrated())
 
-            if msg.cmd == self.GET_POS:
+            if msg is not None and msg.cmd == self.GET_POS:
                 pass
 
-            if msg.cmd == self.GET_FRAME:
+            if msg is not None and msg.cmd == self.GET_FRAME:
                 self._send(self.tracking.get_current_frame())
 
             # delete message
@@ -111,9 +111,12 @@ class TrackingWorker(Process):
         """
             Blocking recieve that permit to avoid some Pipe polling limitation
         """
-        if select([self.pipe.parent], [], [], None)[0]:
-            return self.pipe.parent.recv()
-        else:
+        try:
+            if select([self.pipe.parent], [], [], None)[0]:
+                return self.pipe.parent.recv()
+            else:
+                return None
+        except:
             return None
 
     def _send(self, obj):

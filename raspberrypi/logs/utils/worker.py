@@ -16,14 +16,14 @@ class LogWorker(Process):
     The main purpose of LogWorker is to store and display all the logs recieved from loggers proxy
     It run on an other process to avoid parent process speed reduction.
     """
-    #Worker Command
-    INIT        = 0
-    WRITE_LOG   = 1
+    # Worker Command
+    INIT = 0
+    WRITE_LOG = 1
 
-    #Execution parameter
-    SHOW    = 0
-    WRITE   = 1
-    BOTH    = 2
+    # Execution parameter
+    SHOW = 0
+    WRITE = 1
+    BOTH = 2
 
     def __init__(self):
         """
@@ -50,7 +50,6 @@ class LogWorker(Process):
         # Folder name
         self.folder = '{}-{}-{}'.format(*asctime().split(" ")[1:4])
 
-
     def run(self):
         """
         Process
@@ -61,11 +60,11 @@ class LogWorker(Process):
             msg = self.__recv()
 
             # called at logger creation
-            if msg.command == self.INIT:
+            if msg is not None and msg.command == self.INIT:
                 self.__init(msg)
 
             # called at each logger write cmd
-            elif(msg.command == self.WRITE_LOG):
+            elif msg is not None and msg.command == self.WRITE_LOG:
                 self.__write(msg)
 
     def __init(self, msg):
@@ -81,7 +80,8 @@ class LogWorker(Process):
             if msg.args.exec_param > 0:
                 self.__createFolder(self.context[msg.args.name]["folder"])
 
-                self.context[msg.args.name]["file"] = self.__createFile(self.context[msg.args.name]["filename"])
+                self.context[msg.args.name]["file"] = self.__createFile(
+                    self.context[msg.args.name]["filename"])
 
                 self.commonLogFile = self.__createFile(self.commonLogFileName)
 
@@ -96,7 +96,7 @@ class LogWorker(Process):
         if msg.args.name in self.context:
             # if disaly is set
 
-            # if exec_param equals 0 (print only) or 2 (both manner) 
+            # if exec_param equals 0 (print only) or 2 (both manner)
             if self.context[msg.args.name]["exec_param"] % 2 == 0:
                 # check the desired diplaylog severity
                 if msg.args.level.value >= self.context[msg.args.name]["level_disp"]:
@@ -113,11 +113,11 @@ class LogWorker(Process):
         """
         Display logs with colorisation on terminal
         """
-        print(  self.__formatTime(msg.args.time),
-                self.__formatName(msg.args.name),
-                self.__formatLevel(msg.args.level),
-                ':',
-                *msg.args.args)
+        print(self.__formatTime(msg.args.time),
+              self.__formatName(msg.args.name),
+              self.__formatLevel(msg.args.level),
+              ':',
+              *msg.args.args)
 
         for key, content in msg.args.kwargs.items():
             print("  •", key, ":", content)
@@ -163,9 +163,10 @@ class LogWorker(Process):
         """
         Creating specific logger context
         """
-        self.context[msg.args.name]               = dict()
-        self.context[msg.args.name]["folder"]     = self.folder
-        self.context[msg.args.name]["filename"]   = self.folder + '/'+msg.args.name+'.log'
+        self.context[msg.args.name] = dict()
+        self.context[msg.args.name]["folder"] = self.folder
+        self.context[msg.args.name]["filename"] = self.folder + \
+            '/'+msg.args.name+'.log'
         self.context[msg.args.name]["exec_param"] = msg.args.exec_param
         self.context[msg.args.name]["level_disp"] = msg.args.level_disp.value
 
@@ -185,11 +186,16 @@ class LogWorker(Process):
         """
         Creating or open file
         """
-        return open(name , "a", newline='\n', encoding="utf-8")
+        return open(name, "a", newline='\n', encoding="utf-8")
 
     def __recv(self):
         """
         Blocking recieve that permit to avoid some Pipe polling limitation
         """
-        if select([self.pipe.parent], [], [], None)[0]:
-            return self.pipe.parent.recv()
+        try:
+            if select([self.pipe.parent], [], [], None)[0]:
+                return self.pipe.parent.recv()
+            else:
+                return None
+        except:
+            return None
