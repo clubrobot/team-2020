@@ -4,10 +4,11 @@ import cv2
 
 
 class JetsonVideoStream:
-    def __init__(self, resolution = (1280,720), framerate = 60, name="JetsonVideoStream"):
+    def __init__(self, resolution=(1280, 720), framerate=60, name="JetsonVideoStream"):
         # initialize the video camera stream and read the first frame
         # from the stream
-        self.stream = cv2.VideoCapture(self._gstreamer_pipeline(display_width=resolution[0], display_height=resolution[1], framerate=framerate, flip_method=0), cv2.CAP_GSTREAMER)
+        self.stream = cv2.VideoCapture(self.gstreamer_pipeline(
+            display_width=resolution[0], display_height=resolution[1], framerate=framerate, flip_method=0), cv2.CAP_GSTREAMER)
         (self.grabbed, self.frame) = self.stream.read()
 
         # initialize the thread name
@@ -42,29 +43,18 @@ class JetsonVideoStream:
         # indicate that the thread should be stopped
         self.stopped = True
 
-    def _gstreamer_pipeline(
-        self,
-        capture_width=1280,
-        capture_height=720,
-        display_width=1280,
-        display_height=720,
-        framerate=60,
-        flip_method=0):
-        return (
-            "nvarguscamerasrc ! "
-            "video/x-raw(memory:NVMM), "
-            "width=(int)%d, height=(int)%d, "
-            "format=(string)NV12, framerate=(fraction)%d/1 ! "
-            "nvvidconv flip-method=%d ! "
-            "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
-            "videoconvert ! "
-            "video/x-raw, format=(string)BGR ! appsink"
-            % (
-                capture_width,
-                capture_height,
-                framerate,
-                flip_method,
-                display_width,
-                display_height,
-            )
-        )
+    def gstreamer_pipeline(self, capture_width=1280, capture_height=720, display_width=1280, display_height=720, framerate=60, flip_method=0):
+        return ('nvarguscamerasrc ! '
+                'video/x-raw(memory:NVMM), '
+                'width='+str(capture_width)+' , '
+                'height='+str(capture_height)+' , '
+                'format=NV12, '
+                'framerate='+str(framerate)+'/1 ! '
+                'nvvidconv flip-method='+str(flip_method)+' ! '
+                'video/x-raw, width='+str(display_width) + ', '
+                'height='+str(display_height)+' , '
+                'format=BGRx ! '
+                'videoconvert ! '
+                'video/x-raw , '
+                'format=BGR ! '
+                'appsink')
