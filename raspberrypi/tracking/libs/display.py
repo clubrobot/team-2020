@@ -5,6 +5,7 @@ import cv2.aruco as aruco
 
 from time import sleep
 
+
 class ArucoDisplay():
     def __init__(self, wait=1):
         self.wait = wait
@@ -16,3 +17,8 @@ class ArucoDisplay():
                 cv2.destroyAllWindows()
                 sleep(0.5)
                 sys.exit(0)
+
+    def stop(self):
+        cv2.destroyAllWindows()
+        sleep(0.5)
+        sys.exit(0)
