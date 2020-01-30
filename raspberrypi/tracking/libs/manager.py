@@ -100,6 +100,8 @@ class TrackingManager(metaclass=Singleton):
     def show(self):
         try:
             self.display.show(self.getFrame())
+        except KeyboardInterrupt:
+            self.display.stop()
         except:
             pass
 
@@ -140,13 +142,19 @@ class TrackingManager(metaclass=Singleton):
         """
             Blocking recieve that permit to avoid some Pipe polling limitation
         """
-        if select([self.worker.pipe.child], [], [], timeout)[0]:
-            return self.worker.pipe.child.recv()
-        else:
-            return None
+        try:
+            if select([self.worker.pipe.child], [], [], timeout)[0]:
+                return self.worker.pipe.child.recv()
+            else:
+                return None
+        except:
+            pass
 
     def _send(self, obj):
         """
             Send Method
         """
-        self.worker.pipe.child.send(obj)
+        try:
+            self.worker.pipe.child.send(obj)
+        except:
+            pass
