@@ -1,11 +1,13 @@
 # import the necessary packages
 from imutils.video.webcamvideostream import WebcamVideoStream
 
+
 class VideoStream:
     WEBCAM = 0
     PICAMERA = 1
     JETSONCAMERA = 2
-    def __init__(self, src=0, camera=WEBCAM, resolution=(1280,720), framerate = 60):
+
+    def __init__(self, src=0, camera=WEBCAM, resolution=(1280, 720), framerate=60):
         # check to see if the picamera module should be used
         if camera == self.PICAMERA:
             # only import the picamera packages unless we are
@@ -16,10 +18,12 @@ class VideoStream:
 
             # initialize the picamera stream and allow the camera
             # sensor to warmup
-            self.stream = PiVideoStream(resolution=resolution, framerate=framerate)
+            self.stream = PiVideoStream(
+                resolution=resolution, framerate=framerate)
         elif camera == self.JETSONCAMERA:
-            from jetsonvideostream import JetsonVideoStream
-            self.stream = JetsonVideoStream(resolution=resolution, framerate=framerate)
+            from .jetsonvideostream import JetsonVideoStream
+            self.stream = JetsonVideoStream(
+                resolution=resolution, framerate=framerate)
 
         # otherwise, we are using OpenCV so initialize the webcam
         # stream
