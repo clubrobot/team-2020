@@ -123,7 +123,10 @@ class TrackingWorker(Process):
         """
             Send Method
         """
-        self.pipe.parent.send(obj)
+        try:
+            self.pipe.parent.send(obj)
+        except:
+            pass
 
     def terminate(self):
         self.stop.set()
