@@ -3,6 +3,7 @@
 
 from threading import Thread, Event, RLock
 from time import sleep
+from logs.log_manager import *
 from robots.get_robot_name import *
 import sys
 
@@ -21,11 +22,13 @@ _GET_OTHER_OPCODE = 0x20
 _PING_OPCODE = 0x40
 _IS_OK_OPCODE = 0x50
 _RESET_OPCODE = 0x60
+_GET_OPPONENTS_POS_OPCODE = 0x70
 
 
 class ClientGS(TCPTalks):
     def __init__(self, ROBOT, ip="192.168.12.1", port=_BEACON_PORT):
         TCPTalks.__init__(self, ip=ip, port=port, id=ROBOT)
+        self.logger = LogManager().getlogger("ClientGS", Logger.WRITE, level_disp=INFO)
         self.bind(_PING_OPCODE, self._refresh)
         self.bind(_GET_POS_OPCODE, self._get_my_pos)
 
@@ -64,17 +67,20 @@ class ClientGS(TCPTalks):
         other = _BORNIBUS_ID if self.id == _R128_ID else _R128_ID
         return self.execute(_GET_OTHER_OPCODE, other)
 
+    def get_opponents_pos(self):
+        return self.execute(_GET_OPPONENTS_POS_OPCODE)
+
     def _get_my_pos(self):
         return (666, 666+self.id)
 
 
 class ServerGS(TCPTalksServer):
 
-    def __init__(self, logger):
+    def __init__(self):
         TCPTalksServer.__init__(self, _BEACON_PORT)
         self.ressources = {"balance": -1, "depart": -1, "passage": -1}
         self.mutex = RLock()
-        self.logger = logger
+        self.logger = LogManager().getlogger("ServerGS", Logger.WRITE, level_disp=INFO)
         self.bornibus_id = -1
         self.r128_id = -1
         self.bind(_GET_OTHER_OPCODE, self.get_pos)
@@ -82,6 +88,9 @@ class ServerGS(TCPTalksServer):
         self.bind(_RELEASE_RESSOURCE_OPCODE, self.release_ressource)
         self.bind(_IS_OK_OPCODE, self._is_ok)
         self.bind(_RESET_OPCODE, self._reset)
+        self.bind(_GET_OPPONENTS_POS_OPCODE, self.get_opponents_pos)
+
+        self.logger(INFO, "ServerGS succefully initialised")
 
     def run(self):
         while True:
@@ -119,6 +128,10 @@ class ServerGS(TCPTalksServer):
 
         pos = self.execute(_GET_POS_OPCODE, id=idx)
         return pos
+
+    def get_opponents_pos(self):
+        self.logger(ERROR, "NOT IMPLEMENTED")
+        return [(-1000, -1000),(-1000, -1000)]
 
     def get_ressource(self, idx, name):
         if not self.mutex.acquire(timeout=0.5):
