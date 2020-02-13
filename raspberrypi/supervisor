@@ -4,12 +4,18 @@
 from argparse import ArgumentParser
 from logs.log_manager import *
 from beacons.server import *
+from common.parallel import Thread
 
 
 def server(args):
     LogManager().start()
     srv = SupervisorServer()
-    srv.run()
+    x = Thread(target=srv.run, name='Supervisor', daemon=True)
+    x.start()
+    try:
+        x.join()
+    except KeyboardInterrupt:
+        pass
 
 
 parser = ArgumentParser()
