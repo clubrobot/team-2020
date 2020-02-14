@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rasp_root="~/git/clubrobot/team-2019/"
+rasp_root="~/git/team-2020/"
 
 # check arguments number and types.
 if [ $# -ne 2 ] && [ $# -ne 1 ]
@@ -26,24 +26,41 @@ then
     file_name=$2
     if [[ $1 = [0-9]*\.[0-9]*\.[0-9]*\.[0-9]* ]]
     then
-    ip=$1
+        ip=$1
     else
-    echo "IP not valid !"
-    exit -3
+        echo "IP not valid !"
+        exit -3
     fi
     echo $ip > /tmp/ip-rasp
 fi
 
+echo Sending to 1-Robot or 2-Supervisor ?
+
+read host
+
+if [ $host -eq "1" ]
+then
+    hostname=pi
+fi
+
+if [ $host -eq "2" ]
+then
+    hostname=supervisor
+else
+    hostname=pi
+fi
+
+echo Ok, Sending to $hostname...
 # Catch the git root
 IFS=':'; read -a path_elements <<<"$PATH"
 for link in ${path_elements[*]}
     do
-    if [[ $link =~ .+team-2019.* ]]
-        then 
+    if [[ $link =~ .+team-2020.* ]]
+        then
         local_root=$link
     fi
 done
-local_root=$(echo $local_root | sed 's/\/team-2019\/raspberrypi/\//')
+local_root=$(echo $local_root | sed 's/\/team-2020\/raspberrypi/\//')
 
 # Looking for newest file to upload
 local_root_formated=$(echo $local_root | sed 's/\//\\\//g')
@@ -52,5 +69,8 @@ readarray -t files_liste <<<$files
 file_selected=$(ls -t ${files_liste[@]} | head -n 1)
 
 # Sending
-file_upload=$(echo $file_selected | sed 's/.*\/team-2019\///')
-scp $file_selected pi@$ip:$rasp_root$file_upload
+file_upload=$(echo $file_selected | sed 's/.*\/team-2020\///')
+
+echo $file_selected $hostname@$ip:$rasp_root$file_upload
+
+scp $file_selected $hostname@$ip:$rasp_root$file_upload
