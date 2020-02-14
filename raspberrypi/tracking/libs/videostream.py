@@ -7,7 +7,7 @@ class VideoStream:
     PICAMERA = 1
     JETSONCAMERA = 2
 
-    def __init__(self, src=0, camera=WEBCAM, resolution=(1280, 720), framerate=60):
+    def __init__(self, src=0, camera=JETSONCAMERA, resolution=(1280, 720), framerate=28):
         # check to see if the picamera module should be used
         if camera == self.PICAMERA:
             # only import the picamera packages unless we are

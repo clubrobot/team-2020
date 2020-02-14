@@ -12,13 +12,14 @@ class Camera(VideoStream):
         It also compute the FPS rate.
     """
 
-    def __init__(self, src=0, usePiCamera=False, resolution=(320, 240), framerate=32, exec_param=Logger.SHOW, log_level=INFO):
+    def __init__(self, src=0, camera=VideoStream.JETSONCAMERA, resolution=(1280, 720), framerate=28, exec_param=Logger.SHOW, log_level=INFO):
         """
             Init camera videostream and FPS class.
         """
-        VideoStream.__init__(self, src, usePiCamera, resolution, framerate)
-        self.logger = LogManager().getlogger(
-            self.__class__.__name__, exec_param, log_level)
+        VideoStream.__init__(self, src, camera, resolution, framerate)
+
+        self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
+
         self.fps = FPS().start()
 
         self.logger(INFO, 'Camera Initialisation Success !')
