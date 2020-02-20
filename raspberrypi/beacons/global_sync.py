@@ -67,7 +67,7 @@ class ClientGS(TCPTalks):
     def _refresh(self):
         return True
 
-    def get_pos(self):
+    def get_brother_pos(self):
         other = _BORNIBUS_ID if self.id == _R128_ID else _R128_ID
         return self.execute(_GET_OTHER_OPCODE, other)
 
