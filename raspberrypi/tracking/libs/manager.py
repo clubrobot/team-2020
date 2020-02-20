@@ -8,11 +8,11 @@ import cv2.aruco as aruco
 
 from multiprocessing import Process, Pipe, Lock, Event
 from common.parallel import Thread
-
 from common.metaclass import Singleton
 
 from logs.log_manager import *
 from tracking.libs.utils import *
+from tracking.libs.videostream import *
 from tracking.libs.display import *
 from tracking.libs.worker import *
 
@@ -46,13 +46,12 @@ class TrackingManager(metaclass=Singleton):
 
         self.logger(INFO, 'TrackingManager Initialisation Success !')
 
-    def setup(self, refMarker, markerList=None, debug=False, dictionnary=aruco.DICT_4X4_100):
+    def setup(self, refMarker, camera=VideoStream.JETSONCAMERA, debug=False, dictionnary=aruco.DICT_4X4_100):
         """
         Send Init command to the Worker Process on the specific logger proxy creation
         """
         if self._check_pid():
-            self._send(Command(self.SETUP, InitMsg(
-                refMarker, markerList, debug, dictionnary)))
+            self._send(Command(self.SETUP, InitMsg(refMarker, camera, debug, dictionnary)))
             ret = self._recv(timeout=5)
             if ret:
                 self.logger(INFO, 'Setup sucessful !')
@@ -89,6 +88,13 @@ class TrackingManager(metaclass=Singleton):
                 return True
         self.logger(INFO, 'Recalibration fail !')
         return False
+
+    def getPos(self):
+        if self._check_pid():
+            self._send(Command(self.GET_POS, None))
+            return self._recv(timeout=1)
+        else:
+            return [(-1000, -1000),(-1000, -1000)]
 
     def getFrame(self):
         if self._check_pid():
