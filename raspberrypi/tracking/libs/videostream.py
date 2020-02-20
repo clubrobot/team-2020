@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # import the necessary packages
 from imutils.video.webcamvideostream import WebcamVideoStream
 
@@ -7,7 +10,7 @@ class VideoStream:
     PICAMERA = 1
     JETSONCAMERA = 2
 
-    def __init__(self, src=0, camera=JETSONCAMERA, resolution=(1280, 720), framerate=28):
+    def __init__(self, src=0, camera=JETSONCAMERA, resolution=(1280, 720), framerate=21):
         # check to see if the picamera module should be used
         if camera == self.PICAMERA:
             # only import the picamera packages unless we are

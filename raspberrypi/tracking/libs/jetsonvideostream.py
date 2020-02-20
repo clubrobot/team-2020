@@ -1,10 +1,12 @@
-# import the necessary packages
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from common.parallel import Thread
 import cv2
 
 
 class JetsonVideoStream:
-    def __init__(self, resolution=(1280,720), framerate=28, name="JetsonVideoStream"):
+    def __init__(self, resolution=(1280,720), framerate=21, name="JetsonVideoStream"):
         # initialize the video camera stream and read the first frame
         # from the stream
         self.stream = cv2.VideoCapture(self.gstreamer_pipeline(
@@ -46,7 +48,7 @@ class JetsonVideoStream:
         # indicate that the thread should be stopped
         self.stopped = True
 
-    def gstreamer_pipeline(self, capture_width=3280, capture_height=1848, display_width=1280, display_height=720, framerate=28, flip_method=2):
+    def gstreamer_pipeline(self, capture_width=3280, capture_height=2464, display_width=1280, display_height=720, framerate=21, flip_method=2):
         return ('nvarguscamerasrc ! '
                 'video/x-raw(memory:NVMM), '
                 'width='+str(capture_width)+' , '

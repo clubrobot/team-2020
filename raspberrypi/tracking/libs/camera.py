@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from tracking.libs.videostream import VideoStream
 from imutils.video import FPS
 import imutils
@@ -12,7 +15,7 @@ class Camera(VideoStream):
         It also compute the FPS rate.
     """
 
-    def __init__(self, src=0, camera=VideoStream.JETSONCAMERA, resolution=(1280, 720), framerate=28, exec_param=Logger.SHOW, log_level=INFO):
+    def __init__(self, src=0, camera=VideoStream.JETSONCAMERA, resolution=(1280, 720), framerate=21, exec_param=Logger.SHOW, log_level=INFO):
         """
             Init camera videostream and FPS class.
         """
