@@ -2,14 +2,10 @@
 # coding: utf-8
 
 from threading import Thread, Event
-from collections import namedtuple
 from time import sleep
 from math import hypot
 
 from common.sync_flag_signal import Signal, Flag
-
-Positions = namedtuple('Positions', ['brother', 'opponentA', 'oppenentB'])
-
 
 class Positions:
     def __init__(self, brother=(-1000, -1000), opponentA=(-1000, -1000), oppenentB=(-1000, -1000)):
@@ -24,6 +20,7 @@ class PositionListener(Thread):
 
     def __init__(self, brother_getter, opponents_getter, timestep=0.1, threshold=10):
         Thread.__init__(self)
+        self.daemon = True
 
         # Signals for each robots
         self.__setattr__("signal"+str(self.BROTHER) , Signal())
