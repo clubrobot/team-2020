@@ -6,7 +6,7 @@ from collections import namedtuple
 from time import sleep
 from math import hypot
 
-from common.sync_flag_signal import Signal
+from common.sync_flag_signal import Signal, Flag
 
 Positions = namedtuple('Positions', ['brother', 'opponentA', 'oppenentB'])
 
@@ -18,13 +18,17 @@ class Positions:
         self.oppenentB = oppenentB
 
 class PositionListener(Thread):
+    BROTHER = 0
+    OPPONENTA = 1
+    OPPONENTB = 2
+
     def __init__(self, brother_getter, opponents_getter, timestep=0.1, threshold=10):
         Thread.__init__(self)
 
         # Signals for each robots
-        self.bro_signal = Signal()
-        self.oppA_signal = Signal()
-        self.oppB_signal = Signal()
+        self.__setattr__("signal"+str(self.BROTHER) , Signal())
+        self.__setattr__("signal"+str(self.OPPONENTA) , Signal())
+        self.__setattr__("signal"+str(self.OPPONENTB) , Signal())
 
         # Brother and opponents getter
         self.bro_getter = brother_getter
@@ -46,15 +50,19 @@ class PositionListener(Thread):
         # Atomatically start
         self.start()
 
+    def bind(self, idx, func):
+        self.__setattr__("flag"+str(idx), Flag(func))
+        self.__getattribute__("flag"+str(idx)).bind(self.__getattribute__("signal"+str(idx)))
+
     def _handle_brother_pos(self):
         bro_x, bro_y = self.bro_getter()
 
         if (hypot(bro_y - self.positions.brother[1], bro_x - self.positions.brother[0]) + self.error) > self.threshold:
-            self.bro_signal.ping()
+            self.__getattribute__("signal"+str(self.BROTHER)).ping()
 
             self.error = 0
         else:
-            self.error += hypot(bro_y - self.self.positions.brother[1], bro_x - self.self.positions.brother[0])
+            self.error += hypot(bro_y - self.positions.brother[1], bro_x - self.positions.brother[0])
 
         return (bro_x, bro_y)
 
@@ -62,11 +70,11 @@ class PositionListener(Thread):
         oppA_x, oppA_y = self.opp_getter()[0]
 
         if (hypot(oppA_y - self.positions.opponentA[1], oppA_x - self.positions.opponentA[0]) + self.error) > self.threshold:
-            self.oppA_signal.ping()
+            self.__getattribute__("signal"+str(self.OPPONENTA)).ping()
 
             self.error = 0
         else:
-            self.error += hypot(oppA_y - self.self.positions.opponentA[1], oppA_x - self.self.positions.opponentA[0])
+            self.error += hypot(oppA_y - self.positions.opponentA[1], oppA_x - self.positions.opponentA[0])
 
         return (oppA_x, oppA_y)
 
@@ -74,11 +82,11 @@ class PositionListener(Thread):
         oppB_x, oppB_y = self.opp_getter()[1]
 
         if (hypot(oppB_y - self.positions.oppenentB[1], oppB_x - self.positions.oppenentB[0]) + self.error) > self.threshold:
-            self.oppB_signal.ping()
+            self.__getattribute__("signal"+str(self.OPPONENTB)).ping()
 
             self.error = 0
         else:
-            self.error += hypot(oppB_y - self.self.positions.oppenentB[1], oppB_x - self.self.positions.oppenentB[0])
+            self.error += hypot(oppB_y - self.positions.oppenentB[1], oppB_x - self.positions.oppenentB[0])
 
         return (oppB_x, oppB_y)
 
