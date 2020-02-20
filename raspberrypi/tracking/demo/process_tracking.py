@@ -1,4 +1,4 @@
-import time
+from time import sleep
 import glob
 
 from logs.log_manager import *
@@ -19,13 +19,14 @@ if __name__ == "__main__":
     man = TrackingManager()
     man.start()
 
-    while not man.setup(ref, markerList, debug=True):
+    while not man.setup(ref, camera=VideoStream.WEBCAM, debug=True):
         pass
 
     man.startTracking()
 
     while True:
-        man.show()
+        print(man.getPos())
+        sleep(1)
 
     man.stopTracking()
 
