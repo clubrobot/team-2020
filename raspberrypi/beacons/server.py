@@ -21,7 +21,7 @@ try:
     _BLUE_MARKERS_RANGE   = [1, 2 ,3, 4, 5 ]
     _YELLOW_MARKERS_RANGE = [6, 7, 8, 9, 10]
 
-    _ROBOTS_MARKERS_SIZE  = 0.07 #meters
+    _ROBOTS_MARKERS_SIZE  = 0.07 # meters
 
     _BLUE_MARKERS   = MarkerList(_BLUE_MARKERS_RANGE, _ROBOTS_MARKERS_SIZE)
     _YELLOW_MARKERS = MarkerList(_YELLOW_MARKERS_RANGE, _ROBOTS_MARKERS_SIZE)
@@ -43,15 +43,21 @@ class SupervisorServer(ServerGS):
             #                     id| size | Coords(x,y,z)  |    flip aroud Z
             self.reference = ReferenceMarker(_CENTRAL_MARKER_ID, _CENTRAL_MARKER_SIZE,_CENTRAL_MARKER_COORDINATES , _CENTRAL_MARKER_Z_ROTATION)
 
-            markerList = MarkerList([1, 2, 3, 4, 5], 0.02)
         except:
             self.logger(WARNING, "You should probably check your opencv package first")
             self.logger(WARNING, "Tracking can't work in this configuration")
             self.logger(WARNING, "But all others components works fine ! :)")
 
-        self.tracking = None
+        self.tracking = TrackingManager()
+        self.tracking.start()
 
         self.logger(INFO, "Server succefully initialised")
 
+    def init_tracking(self, camera=VideoStream.JETSONCAMERA):
+        while not self.tracking.setup(self.reference, camera=camera):
+            pass
+
+        self.tracking.startTracking()
+
     def get_opponents_pos(self):
-        return [(-1000, -1000),(-1000, -1000)]
+        return self.tracking.getPos()
