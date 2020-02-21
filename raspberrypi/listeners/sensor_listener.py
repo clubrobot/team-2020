@@ -19,7 +19,7 @@ class SensorListener(Thread):
         self.daemon = True
 
         # Sensors list
-        self.sensors_list = [LEFT, FRONT, RIGHT]
+        self.sensors_list = [self.LEFT, self.FRONT, self.RIGHT]
 
         # Signals for each sensors
         self.__setattr__("signal"+str(self.FRONT) , Signal())
@@ -49,7 +49,7 @@ class SensorListener(Thread):
 
     def _handle_sensor(self, idx):
         try:
-            a, b = self.__getattribute__("getter"+str(idx))
+            a, b = self.__getattribute__("getter"+str(idx))()
         except TimeoutError:
             pass
 

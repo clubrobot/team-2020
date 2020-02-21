@@ -7,12 +7,6 @@ from math import hypot
 
 from common.sync_flag_signal import Signal, Flag
 
-class Positions:
-    def __init__(self, brother=(-1000, -1000), opponentA=(-1000, -1000), oppenentB=(-1000, -1000)):
-        self.brother = brother
-        self.opponentA = opponentA
-        self.oppenentB = oppenentB
-
 class PositionListener(Thread):
     BROTHER = 0
     OPPONENTA = 1
@@ -22,14 +16,22 @@ class PositionListener(Thread):
         Thread.__init__(self)
         self.daemon = True
 
+        # Robots list
+        self.robots_list = [self.BROTHER, self.OPPONENTA, self.OPPONENTB]
+
         # Signals for each robots
         self.__setattr__("signal"+str(self.BROTHER) , Signal())
         self.__setattr__("signal"+str(self.OPPONENTA) , Signal())
         self.__setattr__("signal"+str(self.OPPONENTB) , Signal())
 
         # Brother and opponents getter
-        self.bro_getter = brother_getter
-        self.opp_getter = opponents_getter
+        self.__setattr__("getter"+str(self.BROTHER) , brother_getter)
+        self.__setattr__("getter"+str(self.OPPONENTA) , lambda: opponents_getter()[0])
+        self.__setattr__("getter"+str(self.OPPONENTB) , lambda: opponents_getter()[0])
+
+        self.__setattr__("position"+str(self.BROTHER) , (-1000, -1000))
+        self.__setattr__("position"+str(self.OPPONENTA) , (-1000, -1000))
+        self.__setattr__("position"+str(self.OPPONENTB) , (-1000, -1000))
 
         # Timestep
         self.timestep = timestep
@@ -42,7 +44,6 @@ class PositionListener(Thread):
 
         # Position error
         self.error = 0
-        self.positions = Positions()   # Brother # opponentA #oppenentB
 
         # Atomatically start
         self.start()
@@ -51,51 +52,29 @@ class PositionListener(Thread):
         self.__setattr__("flag"+str(idx), Flag(func))
         self.__getattribute__("flag"+str(idx)).bind(self.__getattribute__("signal"+str(idx)))
 
-    def _handle_brother_pos(self):
-        bro_x, bro_y = self.bro_getter()
+    def get_position(self, idx):
+        return self.__getattribute__("position"+str(idx))
 
-        if (hypot(bro_y - self.positions.brother[1], bro_x - self.positions.brother[0]) + self.error) > self.threshold:
-            self.__getattribute__("signal"+str(self.BROTHER)).ping()
+    def _handle_position(self, idx):
+        x, y = self.__getattribute__("getter"+str(idx))()
 
-            self.error = 0
-        else:
-            self.error += hypot(bro_y - self.positions.brother[1], bro_x - self.positions.brother[0])
-
-        return (bro_x, bro_y)
-
-    def _handle_opponentA_pos(self):
-        oppA_x, oppA_y = self.opp_getter()[0]
-
-        if (hypot(oppA_y - self.positions.opponentA[1], oppA_x - self.positions.opponentA[0]) + self.error) > self.threshold:
-            self.__getattribute__("signal"+str(self.OPPONENTA)).ping()
+        if (hypot(y - self.__getattribute__("position"+str(idx))[1], x - self.__getattribute__("position"+str(idx))[0]) + self.error) > self.threshold:
+            self.__getattribute__("signal"+str(idx)).ping()
 
             self.error = 0
         else:
-            self.error += hypot(oppA_y - self.positions.opponentA[1], oppA_x - self.positions.opponentA[0])
+            self.error += hypot(y - self.__getattribute__("position"+str(idx))[1], x - self.__getattribute__("position"+str(idx))[0])
 
-        return (oppA_x, oppA_y)
-
-    def _handle_opponentB_pos(self):
-        oppB_x, oppB_y = self.opp_getter()[1]
-
-        if (hypot(oppB_y - self.positions.oppenentB[1], oppB_x - self.positions.oppenentB[0]) + self.error) > self.threshold:
-            self.__getattribute__("signal"+str(self.OPPONENTB)).ping()
-
-            self.error = 0
-        else:
-            self.error += hypot(oppB_y - self.positions.oppenentB[1], oppB_x - self.positions.oppenentB[0])
-
-        return (oppB_x, oppB_y)
+        self.__setattr__("position"+str(idx), (x , y))
 
     def run(self):
         while not self.stop.is_set():
+            # handle brother pos
+            for robot in self.robots_list:
+                self._handle_position(robot)
+
             sleep(self.timestep)
 
-            # handle brother pos
-            self.positions.brother = self._handle_brother_pos()
+if __name__ == "__main__":
 
-            # handle opponentA pos
-            self.positions.opponentA = self._handle_opponentA_pos()
-
-            # handle opponentB pos
-            self.positions.opponentB = self._handle_opponentB_pos()
+    p = PositionListener(lambda: (-1000, -1000), lambda: [(-2000, -1000),(-3000, -1000)])
