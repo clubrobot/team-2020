@@ -73,15 +73,15 @@ class AviodanceBehaviour(Thread):
     def run(self):
         while not self.stop.is_set():
             if self.on_brother_moving_event.is_set():
-                self.logger(INFO, "Brother is moving ...", pos=self.position_listener.positions.brother)
+                self.logger(INFO, "Brother is moving ...", pos=self.position_listener.get_position(PositionListener.BROTHER))
                 self.on_brother_moving_event.clear()
 
             if self.on_opponentA_moving_event.is_set():
-                self.logger(INFO, "OpponentA is moving ...", pos=self.position_listener.positions.opponentA)
+                self.logger(INFO, "OpponentA is moving ...", pos=self.position_listener.get_position(PositionListener.OPPONENTA))
                 self.on_opponentA_moving_event.clear()
 
             if self.on_opponentB_moving_event.is_set():
-                self.logger(INFO, "OpponentB is moving ...", pos=self.position_listener.positions.oppenentB)
+                self.logger(INFO, "OpponentB is moving ...", pos=self.position_listener.get_position(PositionListener.OPPONENTB))
                 self.on_opponentB_moving_event.clear()
 
             sleep(self.timestep)
