@@ -4,18 +4,17 @@
 from argparse import ArgumentParser
 from logs.log_manager import *
 from beacons.server import *
+from tracking.libs.videostream import *
 from common.parallel import Thread
 
 
 def server(args):
     LogManager().start()
     srv = SupervisorServer()
-    x = Thread(target=srv.run, name='Supervisor', daemon=True)
-    x.start()
-    try:
-        x.join()
-    except KeyboardInterrupt:
-        pass
+
+    srv.init_tracking(camera=VideoStream.JETSONCAMERA)
+
+    srv.run()
 
 
 parser = ArgumentParser()
