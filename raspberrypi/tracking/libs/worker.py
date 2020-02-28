@@ -57,7 +57,7 @@ class TrackingWorker(Process):
 
             if msg is not None and msg.cmd == self.SETUP:
                 self._setup(msg.args.refMarker,
-                            msg.args.camera, msg.args.debug, msg.args.dictionnary)
+                            msg.args.camera, msg.args.mode, msg.args.debug, msg.args.dictionnary)
                 self._send(True)
 
             if msg is not None and msg.cmd == self.START_TRACKING:
@@ -94,7 +94,7 @@ class TrackingWorker(Process):
             # delete message
             del msg
 
-    def _setup(self, refMarker, camera, debug, dictionnary):
+    def _setup(self, refMarker, camera, mode, debug, dictionnary):
         """
             Internal method to initialise proces dependent components.
         """
@@ -104,7 +104,7 @@ class TrackingWorker(Process):
         self.camera.start()
 
         # Creating Tracker component
-        self.tracking = TrackingCore(self.camera, refMarker, debug, dictionnary)
+        self.tracking = TrackingCore(self.camera, refMarker, mode, debug, dictionnary)
 
     def _recv(self, timeout=None):
         """
