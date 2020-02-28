@@ -14,6 +14,7 @@ from common.tcptalks import TCPTalksServer, TCPTalks
 _BEACON_PORT = 25568
 _BORNIBUS_ID = 1
 _R128_ID = 2
+_EYE_ID = 3
 
 _NO_SIDE     = 0
 _BLUE_SIDE   = 1
@@ -29,14 +30,16 @@ _RESET_OPCODE = 0x60
 _GET_OPPONENTS_POS_OPCODE = 0x70
 _GET_SIDE_OPCODE = 0x80
 _SET_SIDE_OPCODE = 0x81
+_GET_EYE_FINAL_ORIENTATION_OPCODE = 0x82
 
 
 class ClientGS(TCPTalks):
-    def __init__(self, ROBOT, ip="192.168.12.1", port=_BEACON_PORT):
-        TCPTalks.__init__(self, ip=ip, port=port, id=ROBOT)
+    def __init__(self, ID, ip="192.168.12.1", port=_BEACON_PORT):
+        TCPTalks.__init__(self, ip=ip, port=port, id=ID)
         self.logger = LogManager().getlogger("ClientGS", Logger.WRITE, level_disp=INFO)
         self.bind(_PING_OPCODE, self._refresh)
         self.bind(_GET_POS_OPCODE, self._get_my_pos)
+        self.bind(_GET_EYE_FINAL_ORIENTATION_OPCODE, self._get_my_final_orientation)
 
     def reset_ressources(self):
         self.send(_RESET_OPCODE)
@@ -75,10 +78,16 @@ class ClientGS(TCPTalks):
         return self.execute(_GET_OPPONENTS_POS_OPCODE)
 
     def _get_my_pos(self):
-        return (666, 666+self.id)
+        return (-1000, -1000+self.id)
 
     def get_side(self):
         return self.execute(_GET_SIDE_OPCODE)
+
+    def _get_my_final_orientation(self):
+            return None
+
+    def get_final_orientation(self):
+        return self.execute(_GET_EYE_FINAL_ORIENTATION_OPCODE)
 
 
 class ServerGS(TCPTalksServer):
@@ -97,6 +106,7 @@ class ServerGS(TCPTalksServer):
         self.bind(_RESET_OPCODE, self._reset)
         self.bind(_GET_OPPONENTS_POS_OPCODE, self.get_opponents_pos)
         self.bind(_GET_SIDE_OPCODE, self.get_side)
+        self.bind(_GET_EYE_FINAL_ORIENTATION_OPCODE, self._get_final_orientation)
 
         self.side = _NO_SIDE
 
@@ -188,3 +198,10 @@ class ServerGS(TCPTalksServer):
 
     def get_side(self):
         return self.side
+
+    def _get_final_orientation(self):
+        if not _EYE_ID in list(self.client.keys()):
+            return None
+
+        orientation = self.execute(_GET_EYE_FINAL_ORIENTATION_OPCODE, id=_EYE_ID)
+        return orientation
