@@ -14,8 +14,8 @@ try:
     from tracking.libs.utils import *
     from tracking.libs.markers import *
 
-    _WHEATHERVANE_MARKER_ID          = 42
-    _WHEATHERVANE_MARKER_SIZE        = 0.10 # meters
+    _WHEATHERVANE_MARKER_ID          = 17
+    _WHEATHERVANE_MARKER_SIZE        = 0.06 # meters
     _WHEATHERVANE_MARKER_COORDINATES = Point(0, 0, 0) # (x, y, z) meters
     _WHEATHERVANE_MARKER_Z_ROTATION  = 0 # Degrees
 
