@@ -27,6 +27,11 @@ class TrackingManager(metaclass=Singleton):
     GET_CALIBRATION_FLAG = 4
     GET_POS = 5
     GET_FRAME = 6
+    GET_WHEATHERVANE_ORIENTATION = 7
+
+    # Mode
+    MODE_TRACKING = 0
+    MODE_WHEATHERVANE = 1
 
     def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
         """
@@ -46,12 +51,12 @@ class TrackingManager(metaclass=Singleton):
 
         self.logger(INFO, 'TrackingManager Initialisation Success !')
 
-    def setup(self, refMarker, camera=VideoStream.JETSONCAMERA, debug=False, dictionnary=aruco.DICT_4X4_100):
+    def setup(self, refMarker, camera=VideoStream.JETSONCAMERA, mode=MODE_TRACKING, debug=False, dictionnary=aruco.DICT_4X4_100):
         """
         Send Init command to the Worker Process on the specific logger proxy creation
         """
         if self._check_pid():
-            self._send(Command(self.SETUP, InitMsg(refMarker, camera, debug, dictionnary)))
+            self._send(Command(self.SETUP, InitMsg(refMarker, camera, mode, debug, dictionnary)))
             ret = self._recv(timeout=5)
             if ret:
                 self.logger(INFO, 'Setup sucessful !')
@@ -102,6 +107,13 @@ class TrackingManager(metaclass=Singleton):
             return self._recv(timeout=1)
         else:
             return None
+
+    def getWheatherVaneOrientation(self):
+        if self._check_pid():
+            self._send(Command(self.GET_WHEATHERVANE_ORIENTATION, None))
+            return self._recv(timeout=1)
+        else:
+            return ORIENTATION_NONE
 
     def show(self):
         try:

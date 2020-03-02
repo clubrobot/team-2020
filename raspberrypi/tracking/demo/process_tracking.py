@@ -19,13 +19,13 @@ if __name__ == "__main__":
     man = TrackingManager()
     man.start()
 
-    while not man.setup(ref, camera=VideoStream.WEBCAM, debug=True):
+    while not man.setup(ref, camera=VideoStream.WEBCAM, mode=man.MODE_WHEATHERVANE, debug=True):
         pass
 
     man.startTracking()
 
     while True:
-        print(man.getPos())
+        print(man.getWheatherVaneOrientation())
         sleep(1)
 
     man.stopTracking()

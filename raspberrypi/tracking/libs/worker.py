@@ -22,6 +22,7 @@ class TrackingWorker(Process):
     GET_CALIBRATION_FLAG = 4
     GET_POS = 5
     GET_FRAME = 6
+    GET_WHEATHERVANE_ORIENTATION = 7
 
     def __init__(self, exec_param=Logger.SHOW, log_level=INFO):
         """
@@ -90,6 +91,9 @@ class TrackingWorker(Process):
 
             if msg is not None and msg.cmd == self.GET_FRAME:
                 self._send(self.tracking.get_current_frame())
+
+            if msg is not None and msg.cmd == self.GET_WHEATHERVANE_ORIENTATION:
+                self._send(self.tracking.getWheatherVaneOrientation())
 
             # delete message
             del msg
