@@ -9,17 +9,19 @@ from common.parallel import Thread
 
 def start(args):
     LogManager().start()
-    cli = EyeClient(ip='127.0.0.1')
+    cli = EyeClient()
 
-    cli.init_tracking()
+    cli.init_tracking(camera=VideoStream.WEBCAM)
 
     while True:
         while not cli.is_connected:
             try:
                 cli.connect()
                 cli.reset_ressources()
-            except TimeoutError:
+            except:
                 print('Not Connected')
+            sleep(1)
+        sleep(1)
 
 
 

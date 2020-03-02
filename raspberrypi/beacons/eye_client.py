@@ -44,15 +44,15 @@ class EyeClient(ClientGS):
 
         self.logger(INFO, "Eye Client succefully initialised")
 
-    def init_tracking(self, camera=VideoStream.JETSONCAMERA, mode=TrackingManager.WHEATHERVANE):
+    def init_tracking(self, camera=VideoStream.PICAMERA):
         if self.tracking is not None:
-            while not self.tracking.setup(self.reference, camera=camera, mode=mode):
+            while not self.tracking.setup(self.reference, camera=camera, mode=self.tracking.MODE_WHEATHERVANE):
                 pass
 
             self.tracking.startTracking()
 
     def _get_my_final_orientation(self):
         if self.tracking is not None:
-            return None #self.tracking.getFinalOrientation()
+            return self.tracking.getWheatherVaneOrientation()
         else:
-            return None
+            return ORIENTATION_NONE
