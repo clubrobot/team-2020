@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import sys
 from time import sleep
 import numpy as np
@@ -11,6 +14,9 @@ from tracking.libs.utils import *
 from tracking.libs.display import *
 from tracking.libs.markers import *
 
+ORIENTATION_NONE = 0
+ORIENTATION_NORTH = 1
+ORIENTATION_SOUTH = 2
 
 class TrackingCore(Thread):
     """
@@ -37,8 +43,10 @@ class TrackingCore(Thread):
             * Robot B marker : Robot height + max balise height -> 430 mm + 80 mm
 
     """
+    MODE_TRACKING = 0
+    MODE_WHEATHERVANE = 1
 
-    def __init__(self, camera, refMarker, markerList=None, debug=False, dictionnary=aruco.DICT_4X4_100, exec_param=Logger.SHOW, log_level=INFO):
+    def __init__(self, camera, refMarker, mode = MODE_TRACKING, debug=False, dictionnary=aruco.DICT_4X4_100, exec_param=Logger.SHOW, log_level=INFO):
         """
             Init all Tracker Components
         """
@@ -74,8 +82,7 @@ class TrackingCore(Thread):
 
         self.camera = camera
         self.refMarker = refMarker
-        self.markerList = markerList
-
+        self.mode = mode
         self.debug = debug
 
         self.calibrationMatrix = None
@@ -90,6 +97,9 @@ class TrackingCore(Thread):
 
         self.currentFrame = None
 
+        self.pos = list([(-1000, -1000) , (-1000, -1000)])
+        self.wheatherVaneOrientation = ORIENTATION_NONE
+
         self.logger(INFO, 'Tracker Initialisation Success !')
 
     def terminate(self):
@@ -101,6 +111,18 @@ class TrackingCore(Thread):
 
     def get_current_frame(self):
         return self.currentFrame
+
+    def getPos(self):
+        self.lock.acquire()
+        pos = self.pos
+        self.lock.release()
+        return pos
+
+    def getWheatherVaneOrientation(self):
+        self.lock.acquire()
+        orientation = self.wheatherVaneOrientation
+        self.lock.release()
+        return orientation
 
     def is_calibrated(self):
         """
@@ -119,14 +141,17 @@ class TrackingCore(Thread):
             Compute method to print estimated position for each tag
         """
         while not self.stop.is_set():
-            if not self.is_calibrated():
-                if self.calibrate():
-                    self.logger(INFO, 'Calibration Done')
-                    self.calibrated.set()
+            if self.mode == self.MODE_TRACKING:
+                if not self.is_calibrated():
+                    if self.calibrate():
+                        self.logger(INFO, 'Calibration Done')
+                        self.calibrated.set()
+                    else:
+                        self.logger(INFO, 'Waiting for calibration')
+                        sleep(1)
                 else:
-                    self.logger(INFO, 'Waiting for calibration')
-                    sleep(1)
-            else:
+                    self.compute()
+            elif self.mode == self.MODE_WHEATHERVANE:
                 self.compute()
 
         self.camera.stop()
@@ -162,8 +187,7 @@ class TrackingCore(Thread):
         # Get frame
         frame, gray = self._getFrame()
         # Detect Markers
-        corners, ids, _ = aruco.detectMarkers(
-            gray, self.dict, parameters=self.parameters)
+        corners, ids, _ = aruco.detectMarkers(gray, self.dict, parameters=self.parameters)
 
         if np.all(ids != None):
             rvec, tvec, _ = aruco.estimatePoseSingleMarkers(
@@ -173,12 +197,46 @@ class TrackingCore(Thread):
                 aruco.drawDetectedMarkers(frame, corners)
 
             for i in range(0, ids.size):
-                if ids[i] != self.refMarker.identifier:
-                    p = self._getPointMilimeters(rvec[i], tvec[i])
-                    self.logger(INFO, 'id :', ids[i], '| pos : ', p)
+                if self.mode == self.MODE_TRACKING:
+                    if ids[i] != self.refMarker.identifier:
+                        self.pos[0] = self._getPointMilimeters(rvec[i], tvec[i])[:2]
+                elif self.mode == self.MODE_WHEATHERVANE:
+                    if ids[i] == self.refMarker.identifier:
+                        self._ComputeWheatherVaneOrientation(rvec[i], tvec[i])
 
         if self.debug:
             self._updateCurrentFrame(frame)
+
+    def _ComputeWheatherVaneOrientation(self, rvec, tvec):
+        """
+            Internal method to get milimeters pos from rvec and tvec.
+            1. Get rotation matrix from Rvec by rodrigues func:
+                R = Rodrigues(rvec)
+            2. Create vetor
+                Vec =   | 0 |
+                        | 1 |
+                        | 0 |
+            3. get orientation vecter
+                orVec = R * Vec
+            4. get real orientation
+                if(orVec[1] > 0)
+                    SOUTH
+                else
+                    NORTH
+        """
+        R = np.float32(cv2.Rodrigues(rvec)[0])
+        vec = np.float32([0, 1, 1]).reshape(3, 1)
+        orVec = np.matmul(R, vec)
+        if(orVec[1] > 0):
+            # SOUTH
+            self.lock.acquire()
+            self.wheatherVaneOrientation = ORIENTATION_SOUTH
+            self.lock.release()
+        else:
+            # NORTH
+            self.lock.acquire()
+            self.wheatherVaneOrientation = ORIENTATION_NORTH
+            self.lock.release()
 
     def _getPointMilimeters(self, rvec, tvec):
         """
