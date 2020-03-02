@@ -27,7 +27,7 @@ class PositionListener(Thread):
         # Brother and opponents getter
         self.__setattr__("getter"+str(self.BROTHER) , brother_getter)
         self.__setattr__("getter"+str(self.OPPONENTA) , lambda: opponents_getter()[0])
-        self.__setattr__("getter"+str(self.OPPONENTB) , lambda: opponents_getter()[0])
+        self.__setattr__("getter"+str(self.OPPONENTB) , lambda: opponents_getter()[1])
 
         self.__setattr__("position"+str(self.BROTHER) , (-1000, -1000))
         self.__setattr__("position"+str(self.OPPONENTA) , (-1000, -1000))
