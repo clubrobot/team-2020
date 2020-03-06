@@ -5,7 +5,7 @@ import math
 from common.serialutils import Deserializer
 from common.serialtalks import BYTE, INT, LONG, FLOAT
 from daughter_cards.arduino import SecureArduino
-from robots.get_robot_name import *
+from setups.setup_robot_name import *
 # Instructions
 
 _GET_MESURE_SENSOR_OPCODE = 0x10

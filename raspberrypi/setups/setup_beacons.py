@@ -1,19 +1,13 @@
-from beacons.global_sync import ClientGS
-from logs.log_manager import *
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-LogManager().start()
-
-try:
-    beacons1 = ClientGS(1, ip ='127.0.0.1')
-    beacons1.connect()
-    beacons1.reset_ressources()
-except TimeoutError:
-    pass
+from setups.setup_robot_name import *
+from setups.setup_wheeledbase import *
+from beacons.robot_client import *
 
 try:
-    beacons2 = ClientGS(2, ip ='127.0.0.1')
-    beacons2.connect()
-    beacons2.reset_ressources()
+    robot_beacon = RobotClient(ROBOT_ID, wheeledbase.get_position)
+    robot_beacon.connect()
+    robot_beacon.reset_ressources()
 except TimeoutError:
     pass
-

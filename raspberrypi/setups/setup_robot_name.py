@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-BORNIBUS_ID = 0
-R128_ID = 1
+BORNIBUS_ID = 1
+R128_ID = 2
 UNKNOWN = -1
 
 ROBOT_ID = UNKNOWN

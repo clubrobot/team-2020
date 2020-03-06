@@ -3,6 +3,5 @@
 
 from setups.setup_serialtalks import *
 from daughter_cards.wheeledbase import *
-from managers.wheeledbase_manager import *
 
 wheeledbase = WheeledBase(manager)

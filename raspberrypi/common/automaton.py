@@ -1,4 +1,4 @@
-from robots.get_robot_name import *
+from setups.setup_robot_name import *
 
 
 class Automaton:

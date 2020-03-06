@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from setups.setup_logger import *
+
 from daughter_cards.display import *
 from managers.display_manager import *
 from setups.setup_serialtalks import *

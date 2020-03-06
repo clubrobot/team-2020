@@ -4,7 +4,7 @@
 from threading import Thread, Event, RLock
 from time import sleep
 from logs.log_manager import *
-from robots.get_robot_name import *
+from setups.setup_robot_name import *
 import sys
 
 from common.tcptalks import TCPTalksServer, TCPTalks
