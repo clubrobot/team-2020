@@ -35,7 +35,6 @@ class RobotBehavior:
         thread_id = id(thread)
         def target(*args, **kwargs):
             try:
-                print(*args)
                 output = procedure(*args, **kwargs)
                 self.outputs[thread_id] = output
             except AccessDenied:
@@ -124,8 +123,6 @@ class RobotBehavior:
                         self.logger(INFO, 'Goto: ({0[0]:.0f}, {0[1]:.0f}, {0[2]:.2f})'.format(location))
                     else:
                         self.logger(INFO, 'Goto: ({0[0]:.0f}, {0[1]:.0f})'.format(location))
-
-                    print((location, thresholds))
                     goto = self.perform(self.goto_procedure, args=(location, thresholds))
                     success = self.get(goto)
                 else:
@@ -159,6 +156,7 @@ if __name__ == "__main__":
     from math import pi
 
     from setups.setup_serialtalks import *
+    from setups.setup_wheeledbase import *
     from behaviours.action.action import *
 
     class TakeCup(Action):
@@ -171,6 +169,7 @@ if __name__ == "__main__":
         def procedure(self, robot):
             print(robot.__class__.__name__)
             print('take : ', self.idx)
+            sleep(1)
 
     class Robot(RobotBehavior):
         def __init__(self, manager, *args, timelimit=None, **kwargs):
@@ -203,7 +202,7 @@ if __name__ == "__main__":
 
         def goto_procedure(self, destination, thresholds=(None, None)):
             self.automatestep += 1
-
+            sleep(1)
             return True
 
     rb = Robot(manager, timelimit=20)
