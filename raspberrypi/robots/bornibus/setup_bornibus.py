@@ -13,6 +13,8 @@ from setups.setup_beacons import *
 
 def init_robot():
     setup_logger(INFO, "Intialize robot !")
+
+    setup_logger(INFO, "Ready !")
     pass
 
 

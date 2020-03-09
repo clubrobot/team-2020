@@ -2,22 +2,35 @@
 # -*- coding: utf-8 -*-
 
 from robots.bornibus.setup_bornibus import *
-from common.automaton import Automaton
-from managers.sensors_manager import *
+from behaviours.robot_behaviour import RobotBehavior
 import traceback
-from managers.wheeledbase_manager import PositionUnreachable
 
 
-COLOR = Automaton.YELLOW
-COLOR = Automaton.PURPLE
+COLOR = RobotBehavior.BLUE_SIDE
 PREPARATION = False
 
 
-class Bornibus(Automaton):
+class Bornibus(RobotBehavior):
+    def __init__(self, manager, *args, timelimit=None, **kwargs):
+                RobotBehavior.__init__(self, manager, *args, timelimit=timelimit, **kwargs)
 
-    def __init__(self):
-        Automaton.__init__(self)
-        pass
+                self.automate = list()
+
+                self.automatestep = 0
+
+    def make_decision(self):
+        if(self.automatestep < len(self.automate)):
+            action = self.automate[self.automatestep]
+        else:
+            return None, (self,), {}, (None, None)
+            self.stop_event.set()
+
+        return action.procedure, (self,), {}, (action.actionpoint + (action.orientation,), (action.actionpoint_precision, None))
+
+    def goto_procedure(self, destination, thresholds=(None, None)):
+        self.automatestep += 1
+        sleep(1)
+        return True
 
     def set_side(self, side):
         pass
@@ -28,21 +41,14 @@ class Bornibus(Automaton):
     def positioning(self):
         pass
 
-    def stop_match(self):
-        pass
-
-    def run(self):
-        pass
-
 
 if __name__ == '__main__':
     if PREPARATION:
         Bornibus().start_preparation()
     else:
-        auto = Bornibus()
-        auto.set_side(COLOR)
+        robot = Bornibus(manager)
+        robot.set_side(COLOR)
         init_robot()
-        auto.set_position()
-        print("ready")
+        robot.set_position()
         input()
-        auto.run()
+        robot.start()
