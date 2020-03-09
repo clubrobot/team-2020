@@ -11,13 +11,6 @@ class Action:
         """
         raise RuntimeError("The 'procedure' method must be overriden")
 
-    def set_prerequistes(self, prerequistes):
-        if type(prerequistes) is not list: prerequistes = [ prerequistes ]
-
-        for prerequiste in prerequistes:
-            for key, value in prerequiste.effect.items():
-                self.preRequisites[key] = value
-
 if __name__ == "__main__":
 
     from math import pi
