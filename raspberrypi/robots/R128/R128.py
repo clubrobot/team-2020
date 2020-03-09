@@ -12,11 +12,11 @@ PREPARATION = False
 
 class R128(RobotBehavior):
     def __init__(self, manager, *args, timelimit=None, **kwargs):
-                RobotBehavior.__init__(self, manager, *args, timelimit=timelimit, **kwargs)
+        RobotBehavior.__init__(self, manager, *args, timelimit=timelimit, **kwargs)
 
-                self.automate = list()
+        self.automate = list()
 
-                self.automatestep = 0
+        self.automatestep = 0
 
     def make_decision(self):
         if(self.automatestep < len(self.automate)):
