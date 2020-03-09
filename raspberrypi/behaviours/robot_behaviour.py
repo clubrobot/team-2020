@@ -128,10 +128,11 @@ class RobotBehavior:
                 else:
                     success = True
                 if success:
+                    self.logger(INFO, "Perform Action")
                     action = self.perform(procedure, args=args, kwargs=kwargs)
                     self.get(action)
                 else:
-                    self.logger(INFO, 'Goto failed')
+                    self.logger(WARNING, 'Goto failed')
         except:
             self.whitelist.clear()
             raise
@@ -206,5 +207,5 @@ if __name__ == "__main__":
             return True
 
     rb = Robot(manager, timelimit=20)
-    rb.start_preparation()
+
     rb.start()
