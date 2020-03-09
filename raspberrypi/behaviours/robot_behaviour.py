@@ -78,7 +78,7 @@ class RobotBehavior:
             return self.manager_send(self, *args, **kwargs)
 
     def start_preparation(self):
-        from robots.buttons_manager import ButtonsManager
+        from managers.buttons_manager import ButtonsManager
         ButtonsManager(self).begin()
 
     def make_decision(self):
@@ -206,5 +206,5 @@ if __name__ == "__main__":
             return True
 
     rb = Robot(manager, timelimit=20)
-
+    rb.start_preparation()
     rb.start()
