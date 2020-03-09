@@ -2,7 +2,7 @@
 # coding: utf-8
 
 from threading import Thread, Event
-from time import time, sleep
+from time import monotonic, sleep
 from math import hypot
 
 from common.sync_flag_signal import Signal, Flag
@@ -40,11 +40,11 @@ class EndGameListener(Thread):
         self.__setattr__("timeout"+str(idx), timeout)
 
     def run(self):
-        start_time = time()
+        start_time = monotonic()
         while not self.stop.is_set():
             # Handle end game actions
             for action in self.end_game_action_list:
-                if time() - start_time >= self.__getattribute__("timeout"+str(action)):
+                if monotonic() - start_time >= self.__getattribute__("timeout"+str(action)):
                     if not self.__getattribute__("event"+str(action)).is_set():
                         self.__getattribute__("signal"+str(action)).ping()
                         self.__getattribute__("event"+str(action)).set()
@@ -53,18 +53,18 @@ class EndGameListener(Thread):
 
 if __name__ == "__main__":
     endGame = EndGameListener()
-    start_time = time()
+    start_time = monotonic()
 
     def stop_match():
-        print(time() - start_time)
+        print(monotonic() - start_time)
         print("stop !!")
 
     def funny():
-        print(time() - start_time)
+        print(monotonic() - start_time)
         print("funny !!")
 
     def harbour():
-        print(time() - start_time)
+        print(monotonic() - start_time)
         print("harbour !!")
 
     endGame.bind(EndGameListener.END_GAME_ACTION, stop_match)
