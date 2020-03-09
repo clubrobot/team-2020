@@ -1,8 +1,8 @@
 from setups.setup_display import *
-from common.automaton import Automaton
+from behaviours.robot_behaviour import RobotBehavior
 from common.components import LightButtonProxy, SwitchProxy
 from threading import Semaphore
-
+from logs.log_manager import *
 
 class ButtonsManager:
     RED_PIN = 18  # 1
@@ -17,14 +17,14 @@ class ButtonsManager:
     URGENCY_PIN = 20
 
     def begin(self):
-        print("BUTTON MANAGER : Start")
+        self.logger(INFO, "Start")
         Thread(target=self.team_stage, daemon=True).start()
         self.red.set_function(
             Thread(target=self.team_stage, daemon=True).start)
         self.p.acquire()
 
     def team_stage(self):
-        print("BUTTON MANAGER : Team Stage")
+        self.logger(INFO, "Team Stage")
         ssd.set_message("set team")
         self.blue.set_function(
             Thread(target=self.set_team_purple, daemon=True).start)
@@ -32,22 +32,22 @@ class ButtonsManager:
             Thread(target=self.set_team_yellow, daemon=True).start)
 
     def set_team_yellow(self):
-        print("BUTTON MANAGER : Yellow Team")
-        self.side = Automaton.YELLOW
+        self.logger(INFO, "Yellow Team")
+        self.side = RobotBehavior.YELLO_SIDE
         ssd.set_message("team : o")
         self.green.set_function(
             Thread(target=self.odometry_stage, daemon=True).start)
 
     def set_team_purple(self):
-        print("BUTTON MANAGER : Purple Team")
-        self.side = Automaton.PURPLE
+        self.logger(INFO, "Purple Team")
+        self.side = RobotBehavior.BLUE_SIDE
         ssd.set_message("team : m")
         self.green.set_function(
             Thread(target=self.odometry_stage, daemon=True).start)
 
     def odometry_stage(self):
-        print("BUTTON MANAGER : Team Validation")
-        print("BUTTON MANAGER : Odometry Stage")
+        self.logger(INFO, "Team Validation")
+        self.logger(INFO, "Odometry Stage")
         self.auto.set_side(self.side)
         ssd.set_message("set pos")
         self.blue.set_function(None)
@@ -56,30 +56,30 @@ class ButtonsManager:
             Thread(target=self.tirette_stage, daemon=True).start)
 
     def tirette_stage(self):
-        print("BUTTON MANAGER : Odometry Validation")
+        self.logger(INFO, "Odometry Validation")
         self.auto.set_position()
 
-        print("BUTTON MANAGER : Tirret Stage")
+        self.logger(INFO, "Tirret Stage")
         ssd.set_message("tirret")
         self.tirette.set_function(
             Thread(target=self.urgency_stage, daemon=True).start)
         self.green.set_function(None)
 
     def urgency_stage(self):
-        print("BUTTON MANAGER : Tirret Validation")
-        print("BUTTON MANAGER : Urgency Button Stage")
+        self.logger(INFO, "Tirret Validation")
+        self.logger(INFO, "Urgency Button Stage")
         ssd.set_message("urgency")
         self.urgency.set_function(
             Thread(target=self.positioning_stage, daemon=True).start)
 
     def positioning_stage(self):
-        print("BUTTON MANAGER : Urgency Button Validation")
-        print("BUTTON MANAGER : Robot Positionning")
+        self.logger(INFO, "Urgency Button Validation")
+        self.logger(INFO, "Robot Positionning")
         self.auto.positioning()
         self.ready_stage()
 
     def ready_stage(self):
-        print("BUTTON MANAGER : Robot Ready !")
+        self.logger(INFO, "Robot Ready !")
         if self.auto.master.is_active():
             ssd.set_message("ready.")
         else:
@@ -89,7 +89,7 @@ class ButtonsManager:
         self.tirette.set_active_high(False)
 
     def run_match(self):
-        print("BUTTON MANAGER : MATCH LAUNCHED !!!")
+        self.logger(INFO, "MATCH LAUNCHED !!!")
         self.tirette.close()
         self.urgency.close()
         self.red.close()
@@ -113,5 +113,8 @@ class ButtonsManager:
         self.tirette = SwitchProxy(manager, self.TIRETTE_PIN)
         self.urgency = SwitchProxy(
             manager, self.URGENCY_PIN, active_high=False)
+
+        # Init Logger
+        self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, INFO)
 
         self.p = Semaphore(0)
