@@ -7,7 +7,6 @@ COMMON = ../common
 LOCAL_INO_SRCS = main.ino
 LOCAL_CPP_SRCS = \
 	instructions.cpp \
-	Adafruit_BNO055.cpp \
 	$(COMMON)/SerialTalks.cpp \
 	$(COMMON)/CRC16.cpp \
 	$(COMMON)/Clock.cpp \

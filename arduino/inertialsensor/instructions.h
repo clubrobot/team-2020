@@ -6,23 +6,21 @@
 #include "../common/SerialTalks.h"
 #include "PIN.h"
 #include "../common/Wire.h"
-#include "Adafruit_Sensor.h"
-#include "Adafruit_BNO055.h"
-#include "utility/imumaths.h"
-
 
 
 // Opcodes declaration
 
-#define SET_POWER_OPCODE 0x10
-#define ACQUIRE_DATA_RX 0x11
+#define TEST_CO_I2C 0x11
+#define ACQUIRE_DATA_RX 0x12
+#define CALIBRATION_CODE 0x13
 
 
 
 // Instructions prototypes
 
-void SET_POWER(SerialTalks& inst, Deserializer& input, Serializer& output);
+void TEST_CONNECTION(SerialTalks& inst, Deserializer& input, Serializer& output);
 void ACQUIRE_DATA(SerialTalks& inst, Deserializer& input, Serializer& output);
+void GET_CALIBRATION(SerialTalks& inst, Deserializer& input, Serializer& output);
 
 
 #endif
