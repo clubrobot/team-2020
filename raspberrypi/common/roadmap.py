@@ -209,7 +209,6 @@ class RoadMap:
         # Parse the geogebra file to get a list of segments which match the `pattern` regular expression
         begin = time()
         segments = geogebra.getall(pattern)  # Takes a while
-        print("\tPARSING : ", time() - begin)
 
         # Deduce the graph vertices from the previous list of segmenets
         vertices = set()

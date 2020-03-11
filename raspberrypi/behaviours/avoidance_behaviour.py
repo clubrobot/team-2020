@@ -116,7 +116,7 @@ class AviodanceBehaviour(Thread):
         x_sp, y_sp, theta_sp = destination
 
         try:
-            path = [(x_in, y_in), (x_sp, y_sp)]
+            path = [(x_in, y_in), (x_sp, y_sp)] # TODO : Compute real path
             self.logger(INFO, 'follow path: [{}]'.format(', '.join('({0[0]:.0f}, {0[1]:.0f})'.format(waypoint) for waypoint in path)))
         except RuntimeError:
             path_not_found = True
@@ -168,6 +168,10 @@ class AviodanceBehaviour(Thread):
                 self.logger(INFO, 'Resume path')
                 wheeledbase.purepursuit(path, direction={1:'forward', -1:'backward'}[direction])
                 blocked = False
+
+        # Everything is fine
+        self.wheeledbase.linpos_threshold.set(default_linpos_threshold)
+        self.wheeledbase.angpos_threshold.set(default_angpos_threshold)
 
         return True
 

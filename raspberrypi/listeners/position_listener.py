@@ -6,6 +6,7 @@ from time import sleep
 from math import hypot
 
 from common.sync_flag_signal import Signal, Flag
+from common.tcptalks import NotConnectedError
 
 class PositionListener(Thread):
     BROTHER = 0
@@ -71,7 +72,10 @@ class PositionListener(Thread):
         while not self.stop.is_set():
             # handle brother pos
             for robot in self.robots_list:
-                self._handle_position(robot)
+                try:
+                    self._handle_position(robot)
+                except NotConnectedError:
+                    pass
 
             sleep(self.timestep)
 

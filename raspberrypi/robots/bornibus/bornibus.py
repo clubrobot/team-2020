@@ -3,18 +3,31 @@
 
 from robots.bornibus.setup_bornibus import *
 from behaviours.robot_behaviour import RobotBehavior
-import traceback
+from behaviours.avoidance_behaviour import AviodanceBehaviour
+from robots.bornibus.actions.take_cup_action import TakeCup
 
-
-COLOR = RobotBehavior.BLUE_SIDE
+COLOR = RobotBehavior.YELLO_SIDE
 PREPARATION = False
-
 
 class Bornibus(RobotBehavior):
     def __init__(self, manager, *args, timelimit=None, **kwargs):
         RobotBehavior.__init__(self, manager, *args, timelimit=timelimit, **kwargs)
 
-        self.automate = list()
+        self.avoidance_behaviour = AviodanceBehaviour(wheeledbase, roadmap, robot_beacon)
+
+        take1 = TakeCup(geogebra, 1)
+        take2 = TakeCup(geogebra, 2)
+        take3 = TakeCup(geogebra, 3)
+        take4 = TakeCup(geogebra, 4)
+        take5 = TakeCup(geogebra, 5)
+
+        self.automate = [
+                    take1,
+                    take2,
+                    take3,
+                    take4,
+                    take5
+                    ]
 
         self.automatestep = 0
 
@@ -28,9 +41,11 @@ class Bornibus(RobotBehavior):
         return action.procedure, (self,), {}, (action.actionpoint + (action.orientation,), (action.actionpoint_precision, None))
 
     def goto_procedure(self, destination, thresholds=(None, None)):
-        self.automatestep += 1
-        sleep(1)
-        return True
+        if self.avoidance_behaviour.move(destination, thresholds):
+            self.automatestep += 1
+            return True
+        else:
+            return False
 
     def set_side(self, side):
         pass
