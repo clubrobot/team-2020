@@ -5,6 +5,7 @@ from time import sleep
 import sys
 
 from beacons.global_sync import *
+from beacons.server_ihm import *
 
 _BEACON_PORT = 25568
 
@@ -37,27 +38,45 @@ class SupervisorServer(ServerGS):
         # Ressources to lock
         self.ressources = {'Dispenser1': -1, 'Dispenser2': -1}
 
-        self.ihm = None          # TODO : Handle IHM here
+        self.ihm = ServerIHM()          # TODO : Handle IHM here
+        self.tracking = None
 
         try:
             #                     id| size | Coords(x,y,z)  |    flip aroud Z
             self.reference = ReferenceMarker(_CENTRAL_MARKER_ID, _CENTRAL_MARKER_SIZE,_CENTRAL_MARKER_COORDINATES , _CENTRAL_MARKER_Z_ROTATION)
+            self.tracking = TrackingManager()
+            self.tracking.start()
 
         except:
             self.logger(WARNING, "You should probably check your opencv package first")
             self.logger(WARNING, "Tracking can't work in this configuration")
             self.logger(WARNING, "But all others components works fine ! :)")
 
-        self.tracking = TrackingManager()
-        self.tracking.start()
+        self.ihm.show_init_message(self.client.keys())
 
         self.logger(INFO, "Server succefully initialised")
 
-    def init_tracking(self, camera=VideoStream.JETSONCAMERA):
+    def init_tracking(self, camera=VideoStream.WEBCAM):
         while not self.tracking.setup(self.reference, camera=camera):
             pass
 
         self.tracking.startTracking()
+        pass
 
     def get_opponents_pos(self):
         return self.tracking.getPos()
+
+    def run(self):
+        while True:
+            self.ihm.show_init_message(self.client.keys())
+            # try:
+            #     while not self.full():
+            #         self.connect(timeout=100)
+            #         self.ihm.show_init_message(self.client.keys())
+            #     self.sleep_until_one_disconnected()
+
+            # except KeyboardInterrupt:
+            #     break
+            # except Exception as e:
+            #     sys.stderr.write('{}: {}\n'.format(type(e).__name__, e))
+            #     continue
