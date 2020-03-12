@@ -4,6 +4,7 @@
 void setup() {
     Serial.begin(SERIALTALKS_BAUDRATE);
     talks.begin(Serial);
+    pinMode(2,OUTPUT);
 
     message();
 
@@ -14,7 +15,9 @@ void setup() {
 }
 
 void loop() {
-  talks.execute(); 
+  talks.execute();
+
+  digitalWrite(2,HIGH); 
   
 }
 

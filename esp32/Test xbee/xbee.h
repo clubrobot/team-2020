@@ -3,7 +3,7 @@
 
 #include "../common/SerialTalks/SerialTalks.h"
 
-#define SERIALTALKS_BAUDRATE 9600
+#define SERIALTALKS_BAUDRATE 921600
 
 
 void message();
