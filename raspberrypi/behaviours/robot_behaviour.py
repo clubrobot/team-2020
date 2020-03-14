@@ -22,10 +22,10 @@ class RobotBehavior:
         self.stop_event = Event()
 
         # Keep old manager method
-        self.manager_send = self.manager.send
+        #self.manager_send = self.manager.send
 
         # Override manager send method
-        self.manager.send = self.send
+        #self.manager.send = self.send
 
         # Init Logger
         self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
@@ -75,7 +75,7 @@ class RobotBehavior:
         if denyaccess:
             raise AccessDenied(thread_id)
         else:
-            return self.manager_send(self, *args, **kwargs)
+            return self.manager(self, *args, **kwargs)
 
     def start_preparation(self):
         from managers.buttons_manager import ButtonsManager

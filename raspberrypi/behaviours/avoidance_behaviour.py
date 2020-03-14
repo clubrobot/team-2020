@@ -166,7 +166,7 @@ class AviodanceBehaviour(Thread):
                 self.wheeledbase.set_velocities(-direction * 100, 0)
                 sleep(1)
                 self.logger(INFO, 'Resume path')
-                wheeledbase.purepursuit(path, direction={1:'forward', -1:'backward'}[direction])
+                self.wheeledbase.purepursuit(path, direction={1:'forward', -1:'backward'}[direction])
                 blocked = False
 
         # Everything is fine

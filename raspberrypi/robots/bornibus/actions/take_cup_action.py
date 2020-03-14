@@ -12,12 +12,15 @@ class TakeCup(Action):
         self.logger = LogManager().getlogger(self.__class__.__name__, Logger.SHOW, INFO)
 
         self.idx = idx
-        self.actionpoint = (55, 66 + idx) #geo.get('Cup'+str(self.idx))
+        self.actionpoint = geo.get('Cup'+str(self.idx))
         self.orientation = pi
         self.actionpoint_precision = 10
 
     def procedure(self, robot):
         self.logger(INFO, 'Action is launch on', robot.__class__.__name__)
         self.logger(INFO, 'Taking Cup number ', self.idx)
-        sleep(1)
+
+        robot.wheeledbase.turnonthespot(pi)
+        robot.wheeledbase.wait()
+        sleep(3)
 
