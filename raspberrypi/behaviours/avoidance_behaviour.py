@@ -5,7 +5,7 @@ from threading import Thread, Event
 
 from listeners.position_listener import *
 from listeners.sensor_listener import *
-
+from common.roadmap import intersect
 from logs.log_manager import *
 import math
 class AviodanceBehaviour(Thread):
@@ -20,7 +20,7 @@ class AviodanceBehaviour(Thread):
     BEHAVIOUR_DETECT_NEAR_TO_ME = 0
     BEHAVIOUR_DETECT_ON_MY_PATH = 1
 
-    def __init__(self, wheeledbase, roadmap, beacon_client, behaviour=BEHAVIOUR_STOPPING, detection_style=BEHAVIOUR_DETECT_NEAR_TO_ME, timestep=0.1, exec_param=Logger.SHOW, log_level=INFO):
+    def __init__(self, wheeledbase, roadmap, beacon_client, behaviour=BEHAVIOUR_STOPPING, timestep=0.1, exec_param=Logger.SHOW, log_level=INFO):
         """
             Init all internals components
         """
@@ -48,8 +48,6 @@ class AviodanceBehaviour(Thread):
         self.on_brother_moving_event.clear()
         self.on_opponentA_moving_event.clear()
         self.on_opponentB_moving_event.clear()
-
-        self.movement_in_progress.clear()
 
         # Bind behaviour wheeledbase and beacon client
         self.wheeledbase        = wheeledbase
@@ -101,27 +99,54 @@ class AviodanceBehaviour(Thread):
         """
         self.on_opponentB_moving_event.set()
 
+    def _is_on_my_path(self, obstacle):
+        """
+        Check if the obstacle intersect the current path
+        """
+        if self.path is not None:
+            shape = obstacle.get_shape()
+            for i in range(len(self.path) - 1):
+                edge = self.path[i], self.path[i+1]
+                for i in range(len(shape)):
+                    cutline = (shape[i], shape[(i + 1) % len(shape)])
+                    if intersect(cutline, edge):
+                        self.logger(WARNING, 'obstacle is on the path')
+                        return True
+                    else:
+                        self.logger(INFO, 'cutline is not on the path')
+
+            self.logger(INFO, 'obstacle is not on the path')
+            return False
+        else:
+            return False
+
     def run(self):
         while not self.stop.is_set():
             if self.on_brother_moving_event.is_set():
                 self.logger(INFO, "Brother is moving ...", pos=self.position_listener.get_position(PositionListener.BROTHER))
+
                 self.friend_obstacle.set_position(*self.position_listener.get_position(PositionListener.BROTHER))
-                # check if it is on my path
-                #self.abort.set()
+                if(self._is_on_my_path(self.friend_obstacle)):
+                    self.abort.set()
+
                 self.on_brother_moving_event.clear()
 
             if self.on_opponentA_moving_event.is_set():
                 self.logger(INFO, "OpponentA is moving ...", pos=self.position_listener.get_position(PositionListener.OPPONENTA))
+
                 self.opp_A_obstacle.set_position(*self.position_listener.get_position(PositionListener.OPPONENTA))
-                # check if it is on my path
-                #self.abort.set()
+                if(self._is_on_my_path(self.opp_A_obstacle)):
+                    self.abort.set()
+
                 self.on_opponentA_moving_event.clear()
 
             if self.on_opponentB_moving_event.is_set():
                 self.logger(INFO, "OpponentB is moving ...", pos=self.position_listener.get_position(PositionListener.OPPONENTB))
+
                 self.opp_B_obstacle.set_position(*self.position_listener.get_position(PositionListener.OPPONENTB))
-                # check if it is on my path
-                #self.abort.set()
+                if(self._is_on_my_path(self.opp_B_obstacle)):
+                    self.abort.set()
+
                 self.on_opponentB_moving_event.clear()
 
             sleep(self.timestep)
@@ -138,7 +163,7 @@ class AviodanceBehaviour(Thread):
 
         try:
             self.path = self.roadmap.get_shortest_path((x_in, y_in), (x_sp, y_sp))
-            self.logger(INFO, 'follow path: [{}]'.format(', '.join('({0[0]:.0f}, {0[1]:.0f})'.format(waypoint) for waypoint in path)))
+            self.logger(INFO, 'follow path: [{}]'.format(', '.join('({0[0]:.0f}, {0[1]:.0f})'.format(waypoint) for waypoint in self.path)))
         except RuntimeError:
             path_not_found = True
 
@@ -149,12 +174,12 @@ class AviodanceBehaviour(Thread):
             return False
 
         # Pure Pursuit configuration
-        if math.cos(math.atan2(path[1][1] - path[0][1], path[1][0] - path[0][0]) - theta_in) >= 0:
+        if math.cos(math.atan2(self.path[1][1] - self.path[0][1], self.path[1][0] - self.path[0][0]) - theta_in) >= 0:
             direction = 1
         else:
             direction = -1
 
-        if math.hypot(path[1][0] - path[0][0], path[1][1] - path[0][1]) < 5 and theta_sp is not None:
+        if math.hypot(self.path[1][0] - self.path[0][0], self.path[1][1] - self.path[0][1]) < 5 and theta_sp is not None:
             finalangle = theta_sp - (direction - 1) * math.pi
         else:
             finalangle = None
@@ -182,6 +207,7 @@ class AviodanceBehaviour(Thread):
 
             # If obstacle is on my path abort
             if self.abort.is_set():
+                self.wheeledbase.wheeledbase.stop()
                 self.abort.clear()
                 return False
 
