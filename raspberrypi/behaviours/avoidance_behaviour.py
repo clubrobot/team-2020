@@ -30,13 +30,16 @@ class AviodanceBehaviour(Thread):
         # Init Logger
         self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
 
+        # Create path
+        self.path = None
+
         # Init internal events
         self.on_brother_moving_event    = Event()
         self.on_opponentA_moving_event  = Event()
         self.on_opponentB_moving_event  = Event()
         # TODO Sensors event
 
-        self.movement_in_progress       = Event()
+        self.abort                      = Event()
 
         # Stopping event
         self.stop = Event()
@@ -69,6 +72,15 @@ class AviodanceBehaviour(Thread):
 
         # TODO Sensors events
 
+        # Instanciate obstacles
+        self.friend_obstacle = self.roadmap.create_obstacle(( (-200,-200),(200,-200),(200,200),(-200,200) ))
+        self.opp_A_obstacle  = self.roadmap.create_obstacle(( (-200,-200),(200,-200),(200,200),(-200,200) ))
+        self.opp_B_obstacle  = self.roadmap.create_obstacle(( (-200,-200),(200,-200),(200,200),(-200,200) ))
+
+        self.friend_obstacle.set_position(-1000,-1000)
+        self.opp_A_obstacle.set_position(-1000,-1000)
+        self.opp_B_obstacle.set_position(-1000,-1000)
+
         self.start()
 
     def _on_brother_moving(self):
@@ -93,14 +105,23 @@ class AviodanceBehaviour(Thread):
         while not self.stop.is_set():
             if self.on_brother_moving_event.is_set():
                 self.logger(INFO, "Brother is moving ...", pos=self.position_listener.get_position(PositionListener.BROTHER))
+                self.friend_obstacle.set_position(*self.position_listener.get_position(PositionListener.BROTHER))
+                # check if it is on my path
+                #self.abort.set()
                 self.on_brother_moving_event.clear()
 
             if self.on_opponentA_moving_event.is_set():
                 self.logger(INFO, "OpponentA is moving ...", pos=self.position_listener.get_position(PositionListener.OPPONENTA))
+                self.opp_A_obstacle.set_position(*self.position_listener.get_position(PositionListener.OPPONENTA))
+                # check if it is on my path
+                #self.abort.set()
                 self.on_opponentA_moving_event.clear()
 
             if self.on_opponentB_moving_event.is_set():
                 self.logger(INFO, "OpponentB is moving ...", pos=self.position_listener.get_position(PositionListener.OPPONENTB))
+                self.opp_B_obstacle.set_position(*self.position_listener.get_position(PositionListener.OPPONENTB))
+                # check if it is on my path
+                #self.abort.set()
                 self.on_opponentB_moving_event.clear()
 
             sleep(self.timestep)
@@ -116,7 +137,7 @@ class AviodanceBehaviour(Thread):
         x_sp, y_sp, theta_sp = destination
 
         try:
-            path = [(x_in, y_in), (x_sp, y_sp)] # TODO : Compute real path
+            self.path = self.roadmap.get_shortest_path((x_in, y_in), (x_sp, y_sp))
             self.logger(INFO, 'follow path: [{}]'.format(', '.join('({0[0]:.0f}, {0[1]:.0f})'.format(waypoint) for waypoint in path)))
         except RuntimeError:
             path_not_found = True
@@ -146,27 +167,30 @@ class AviodanceBehaviour(Thread):
         self.wheeledbase.angpos_threshold.set(angpos_threshold or default_angpos_threshold)
 
         # Trajectory
-        self.wheeledbase.purepursuit(path, direction={1:'forward', -1:'backward'}[direction], finalangle=finalangle)
-
-        # Robot moving event
-        self.movement_in_progress.set()
+        self.wheeledbase.purepursuit(self.path, direction={1:'forward', -1:'backward'}[direction], finalangle=finalangle)
 
         # Wait until destination is reached
         isarrived = False
         blocked = False
         while not isarrived:
+
             try:
                 isarrived = self.wheeledbase.isarrived()
             except RuntimeError:
                 self.logger(WARNING, 'Blocked while following path')
                 blocked = True
 
+            # If obstacle is on my path abort
+            if self.abort.is_set():
+                self.abort.clear()
+                return False
+
             if blocked:
                 self.logger(INFO, 'Go backward a little')
                 self.wheeledbase.set_velocities(-direction * 100, 0)
                 sleep(1)
                 self.logger(INFO, 'Resume path')
-                self.wheeledbase.purepursuit(path, direction={1:'forward', -1:'backward'}[direction])
+                self.wheeledbase.purepursuit(self.path, direction={1:'forward', -1:'backward'}[direction])
                 blocked = False
 
         # Everything is fine

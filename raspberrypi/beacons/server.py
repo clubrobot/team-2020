@@ -5,7 +5,7 @@ from time import sleep
 import sys
 
 from beacons.global_sync import *
-from beacons.server_ihm import *
+#from beacons.server_ihm import *
 
 _BEACON_PORT = 25568
 
@@ -38,7 +38,7 @@ class SupervisorServer(ServerGS):
         # Ressources to lock
         self.ressources = {'Dispenser1': -1, 'Dispenser2': -1}
 
-        self.ihm = ServerIHM()          # TODO : Handle IHM here
+        #self.ihm = ServerIHM()          # TODO : Handle IHM here
         self.tracking = None
 
         try:
@@ -52,7 +52,7 @@ class SupervisorServer(ServerGS):
             self.logger(WARNING, "Tracking can't work in this configuration")
             self.logger(WARNING, "But all others components works fine ! :)")
 
-        self.ihm.show_init_message(self.client.keys())
+        #self.ihm.show_init_message(self.client.keys())
 
         self.logger(INFO, "Server succefully initialised")
 
@@ -68,15 +68,15 @@ class SupervisorServer(ServerGS):
 
     def run(self):
         while True:
-            self.ihm.show_init_message(self.client.keys())
-            # try:
-            #     while not self.full():
-            #         self.connect(timeout=100)
-            #         self.ihm.show_init_message(self.client.keys())
-            #     self.sleep_until_one_disconnected()
+            #self.ihm.show_init_message(self.client.keys())
+            try:
+                while not self.full():
+                    self.connect(timeout=100)
+                    #self.ihm.show_init_message(self.client.keys())
+                self.sleep_until_one_disconnected()
 
-            # except KeyboardInterrupt:
-            #     break
-            # except Exception as e:
-            #     sys.stderr.write('{}: {}\n'.format(type(e).__name__, e))
-            #     continue
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                sys.stderr.write('{}: {}\n'.format(type(e).__name__, e))
+                continue
