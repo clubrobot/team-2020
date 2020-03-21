@@ -54,7 +54,6 @@ class AviodanceBehaviour(Thread):
         self.roadmap            = roadmap
         self.beacon_client      = beacon_client
         self.behaviour          = behaviour
-        self.detection_style    = detection_style
         self.timestep           = timestep # Seconds
 
         # Instanciate position listener
