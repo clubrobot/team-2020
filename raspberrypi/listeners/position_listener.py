@@ -57,8 +57,9 @@ class PositionListener(Thread):
         return self.__getattribute__("position"+str(idx))
 
     def _handle_position(self, idx):
-        x, y = self.__getattribute__("getter"+str(idx))()
+        pos = self.__getattribute__("getter"+str(idx))()
 
+        x, y = pos[:2]
         if (hypot(y - self.__getattribute__("position"+str(idx))[1], x - self.__getattribute__("position"+str(idx))[0]) + self.error) > self.threshold:
             self.__getattribute__("signal"+str(idx)).ping()
 
