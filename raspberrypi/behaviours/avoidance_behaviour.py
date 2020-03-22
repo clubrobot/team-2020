@@ -206,7 +206,7 @@ class AviodanceBehaviour(Thread):
 
             # If obstacle is on my path abort
             if self.abort.is_set():
-                self.wheeledbase.wheeledbase.stop()
+                self.wheeledbase.stop()
                 self.abort.clear()
                 return False
 
