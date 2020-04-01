@@ -3,7 +3,7 @@
 from time import sleep
 from math import pi
 
-from behaviours.action.action import *
+from common.strategy import Action
 from logs.log_manager import *
 from daughter_cards.cupcollector import *
 
