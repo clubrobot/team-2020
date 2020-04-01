@@ -12,7 +12,7 @@ def server(args):
     LogManager().start()
     srv = SupervisorServer()
 
-    # srv.init_tracking(camera=VideoStream.JETSONCAMERA)
+    srv.init_tracking(camera=VideoStream.WEBCAM)
 
     srv.run()
 
