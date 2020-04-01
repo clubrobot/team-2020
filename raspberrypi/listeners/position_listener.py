@@ -66,7 +66,7 @@ class PositionListener(Thread):
         try:
             self.pos = self.__getattribute__("getter"+str(idx))()
         except:
-            print('error')
+            pass
 
         x, y = self.pos[:2]
         if (hypot(y - self.__getattribute__("position"+str(idx))[1], x - self.__getattribute__("position"+str(idx))[0]) + self.error) > self.threshold:
