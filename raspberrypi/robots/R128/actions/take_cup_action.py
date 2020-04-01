@@ -20,7 +20,4 @@ class TakeCup(Action):
         self.logger(INFO, 'Action is launch on', robot.__class__.__name__)
         self.logger(INFO, 'Taking Cup number ', self.idx)
 
-        robot.wheeledbase.turnonthespot(pi)
-        robot.wheeledbase.wait()
-        sleep(3)
 
