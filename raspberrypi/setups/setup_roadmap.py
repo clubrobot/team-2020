@@ -1,30 +1,36 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
-from common.logger import *
 from common.geogebra import Geogebra
-from robots.get_robot_name import *
+from common.roadmap import RoadMap
 
-if ROBOT_ID == BORNIBUS_ID or ROBOT_ID == R128_ID:
-    log = Logger(Logger.BOTH, file_name="/home/pi/logs/start.log")
-else:
-    log = Logger(Logger.SHOW)
+from setups.setup_logger import *
+from setups.setup_robot_name import *
 
+def init_roadmap(robot_id, desired_id):
+    if robot_id == BORNIBUS_ID:
+        setup_logger(INFO ,"Bornibus")
+    elif robot_id == R128_ID:
+        setup_logger(INFO ,"R128")
+    else:
+        setup_logger(INFO ,"Not on a robot !")
 
-if ROBOT_ID == BORNIBUS_ID:
-    print("Bornibus")
-    os.chdir("/home/pi/git/clubrobot/team-2020")
+    if robot_id == desired_id and not UNKNOWN:
+        os.chdir("/home/pi/git/clubrobot/team-2020")
 
-elif ROBOT_ID == R128_ID:
-    print("R128")
-    os.chdir("/home/pi/git/clubrobot/team-2020")
+    roadmap_path = None
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if desired_id == BORNIBUS_ID:
+                if file == "bornibus.ggb":
+                    roadmap_path = os.path.join(root, file)
+            elif desired_id == R128_ID:
+                if file == "128.ggb":
+                    roadmap_path = os.path.join(root, file)
 
-roadmap = None
-for root, dirs, files in os.walk("."):
-    for file in files:
-        if ROBOT_ID == BORNIBUS_ID:
-            if file == "Bornibus.ggb":
-                roadmap = os.path.join(root, file)
-        elif ROBOT_ID == R128_ID:
-            if file == "128.ggb":
-                roadmap = os.path.join(root, file)
-if roadmap:
-    geo = Geogebra(roadmap)
+    geo  = Geogebra(roadmap_path)
+    road = RoadMap.load(geo)
+
+    return geo, road
+

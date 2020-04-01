@@ -7,6 +7,7 @@ from threading import RLock
 import warnings
 from common.tcptalks import TCPTalks, TCPTalksServer, NotConnectedError
 from common.serialtalks import RESEND_OPCODE
+from logs.log_manager import *
 COMPONENTS_SERVER_DEFAULT_PORT = 25566
 
 CREATE_SERIALTALKS_COMPONENT_OPCODE = 0x10
@@ -181,7 +182,7 @@ class Server(TCPTalksServer):
         for compid in self.components:
             if isinstance(compid,SerialTalksComponent):
                 compid._cleanup()
-        
+
 
     def addcomponent(self, comp, compid):
         if not compid in self.components:
@@ -328,6 +329,9 @@ class SecureSerialTalksProxy(Proxy):
         if not hasattr(self,"lock") : object.__setattr__(self, 'lock', RLock())
         if not hasattr(self, "default_result"): object.__setattr__(self, 'default_result', default_result)
         object.__setattr__(self, 'initialized', False)
+
+        self.logger = LogManager().getlogger(self.__class__.__name__, level_disp=INFO)
+
         try:
             compid = manager.execute(CREATE_SERIALTALKS_COMPONENT_OPCODE, uuid)
             Proxy.__init__(self, manager, compid, attrlist, methlist)
@@ -337,7 +341,7 @@ class SecureSerialTalksProxy(Proxy):
             send_addr = self.send
         except (ConnectionFailedError,TimeoutError):
             object.__setattr__(self, '_compid', uuid)
-            warnings.warn("Arduino {} is unreachable !".format(uuid), NotConnectedWarning)
+            self.logger(WARNING, "Arduino {} is unreachable !".format(uuid), NotConnectedWarning)
             def trash_none(*args,**kwargs) : return None
             def trash_return(opcode, *args, **kwargs):
                 if opcode in default_result.keys():
@@ -363,17 +367,17 @@ class SecureSerialTalksProxy(Proxy):
                 pass
             except KeyError:
                 etype, value, tb = sys.exc_info()
-                print(etype, tb, value)
+                self.logger(WARNING, args=(etype, tb, value))
                 self.initialized = False
-                warnings.warn("Arduino {} is unreachable ! (KeyError)".format(uuid), NotConnectedWarning)
+                self.logger(WARNING, "Arduino {} is unreachable ! (KeyError)".format(uuid), NotConnectedWarning)
             except (NotConnectedError, ConnectionFailedError):
                 etype, value, tb = sys.exc_info()
-                print(etype, tb, value)
-                warnings.warn("Arduino {} is unreachable ! (NotConnectedError or ConnectionFailedError)".format(uuid), NotConnectedWarning)
+                self.logger(WARNING, args=(etype, tb, value))
+                self.logger(WARNING, "Arduino {} is unreachable ! (NotConnectedError or ConnectionFailedError)".format(uuid), NotConnectedWarning)
             except MuteError:
                 etype, value, tb = sys.exc_info()
-                print(etype, tb, value)
-                warnings.warn("Arduino {} is unreachable (MuteError)!".format(uuid), NotConnectedWarning)
+                self.logger(WARNING, args=(etype, tb, value))
+                self.logger(WARNING, "Arduino {} is unreachable (MuteError)!".format(uuid), NotConnectedWarning)
             if with_lock: object.__getattribute__(self, "lock").release()
 
         def execute(self, opcode, *args, **kwargs):
@@ -394,7 +398,7 @@ class SecureSerialTalksProxy(Proxy):
                     object.__getattribute__(self, "lock").release()
                     return None
             except TimeoutError:
-                warnings.warn("Timeout Error with {}".format(uuid), TimeoutWarning)
+                self.logger(WARNING, "Timeout Error with {}".format(uuid), TimeoutWarning)
                 if opcode in self.default_result.keys():
                     object.__getattribute__(self, "lock").release()
                     return self.default_result[opcode].__copy__()
@@ -420,7 +424,7 @@ class SecureSerialTalksProxy(Proxy):
             except ConnectionFailedError:
                 self.connect(with_lock=False)
             except TimeoutError:
-                warnings.warn("Timeout Error with {}".format(uuid), TimeoutWarning)
+                self.logger(WARNING, "Timeout Error with {}".format(uuid), TimeoutWarning)
             object.__getattribute__(self, "lock").release()
 
         object.__setattr__(self, "connect", MethodType(connect, self))

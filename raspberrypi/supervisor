@@ -2,13 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from argparse import ArgumentParser
-from common.logger import Logger
-from beacons.global_sync import ServerGS
+from logs.log_manager import *
+from beacons.server import *
+from tracking.libs.videostream import *
+from common.parallel import Thread
 
 
 def server(args):
-    log = Logger(Logger.WRITE, file_name="/home/pi/logs/server.log")
-    srv = ServerGS(log)
+    LogManager().start()
+    srv = SupervisorServer()
+
+    # srv.init_tracking(camera=VideoStream.JETSONCAMERA)
+
     srv.run()
 
 

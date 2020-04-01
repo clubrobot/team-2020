@@ -2,36 +2,58 @@
 # -*- coding: utf-8 -*-
 
 from robots.bornibus.setup_bornibus import *
-from common.automaton import Automaton
-from managers.sensors_manager import *
-import traceback
-from managers.wheeledbase_manager import PositionUnreachable
-
-
-COLOR = Automaton.YELLOW
-COLOR = Automaton.PURPLE
+from behaviours.robot_behaviour import RobotBehavior
+from behaviours.avoidance_behaviour import AviodanceBehaviour
+from robots.bornibus.actions.take_cup_action import TakeCup
+from robots.bornibus.actions.put_cup_action import PutCup
+from math import pi
+COLOR = RobotBehavior.YELLO_SIDE
 PREPARATION = False
 
+class Bornibus(RobotBehavior):
+    def __init__(self, manager, *args, timelimit=None, **kwargs):
+        RobotBehavior.__init__(self, manager, *args, timelimit=timelimit, **kwargs)
 
-class Bornibus(Automaton):
+        self.avoidance_behaviour = AviodanceBehaviour(wheeledbase, roadmap, robot_beacon)
 
-    def __init__(self):
-        Automaton.__init__(self)
-        pass
+        self.wheeledbase = wheeledbase
+        self.cup_collector = cup_collector
+
+        take1 = TakeCup(geogebra, 1)
+        take2 = TakeCup(geogebra, 2)
+        put1  = PutCup(geogebra, 1)
+
+        self.automate = [
+            take1,
+            take2,
+            put1,
+                    ]
+
+        self.automatestep = 0
+
+    def make_decision(self):
+        if(self.automatestep < len(self.automate)):
+            action = self.automate[self.automatestep]
+        else:
+            return None, (self,), {}, (None, None)
+            self.stop_event.set()
+
+        return action.procedure, (self,), {}, (action.actionpoint + (action.orientation,), (action.actionpoint_precision, None))
+
+    def goto_procedure(self, destination, thresholds=(None, None)):
+        if self.avoidance_behaviour.move(destination, thresholds):
+            self.automatestep += 1
+            return True
+        else:
+            return False
 
     def set_side(self, side):
         pass
 
     def set_position(self):
-        pass
+        wheeledbase.set_position(*geogebra.get('StartYellow'), -pi/2)
 
     def positioning(self):
-        pass
-
-    def stop_match(self):
-        pass
-
-    def run(self):
         pass
 
 
@@ -39,10 +61,9 @@ if __name__ == '__main__':
     if PREPARATION:
         Bornibus().start_preparation()
     else:
-        auto = Bornibus()
-        auto.set_side(COLOR)
+        robot = Bornibus(manager)
+        robot.set_side(COLOR)
         init_robot()
-        auto.set_position()
-        print("ready")
+        robot.set_position()
         input()
-        auto.run()
+        robot.start()

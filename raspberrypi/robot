@@ -24,7 +24,7 @@ def start(args):
     except ForeverAloneError:
         print("NO SERVER")
 
-    from robots.get_robot_name import ROBOT_ID, BORNIBUS_ID, R128_ID
+    from setups.setup_robot_name import ROBOT_ID, BORNIBUS_ID, R128_ID
     if ROBOT_ID == BORNIBUS_ID:
         print("BORNIBUS")
         from robots.Bornibus.Bornibus import Bornibus
