@@ -32,7 +32,7 @@ construction = tree.getroot().find('./construction')
 #	x *= 2000
 #	y *= 3000
 #	vertices.append((x, y))
-side = 300
+side = 200
 vertices = list()
 imax = round(2000 / (side * math.sqrt(3) / 2))
 jmax = round(3000 / side)
