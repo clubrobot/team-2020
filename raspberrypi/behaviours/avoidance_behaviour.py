@@ -112,7 +112,7 @@ class AviodanceBehaviour(Thread):
                         self.logger(WARNING, 'obstacle is on the path')
                         return True
                     else:
-                        self.logger(INFO, 'cutline is not on the path')
+                        self.logger(DEBUG, 'cutline is not on the path')
 
             self.logger(INFO, 'obstacle is not on the path')
             return False
