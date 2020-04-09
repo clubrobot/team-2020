@@ -4,7 +4,7 @@
 from time import monotonic, sleep
 from threading import Thread, Event, current_thread
 from logs.log_manager import *
-from listeners.end_game_listener import *
+from listeners.in_game_listener import *
 from common.components import AccessDenied
 
 class RobotBehavior:
@@ -23,6 +23,8 @@ class RobotBehavior:
 
         # Set timelimit
         self.manager.set_timelimit(self.timelimit)
+
+        self.inGameAction = InGameListener()
 
     def perform(self, procedure, args=(), kwargs={}, timelimit=True):
         thread = Thread(args=args, kwargs=kwargs, daemon=True)
@@ -50,6 +52,16 @@ class RobotBehavior:
             thread_id = id(thread)
             self.manager.blacklist.add(thread_id)
 
+    def suspend_all(self):
+        self.logger(INFO, 'Suspend all actions')
+        if hasattr(self, 'goto'):
+            self.interrupt(self.goto)
+
+        if hasattr(self, 'action'):
+            self.interrupt(self.action)
+
+        self.stop_event.set()
+
     def get(self, thread, timeout=None):
         thread.join(timeout=timeout)
         if thread.is_alive():
@@ -75,9 +87,6 @@ class RobotBehavior:
     def set_position(self):
         raise RuntimeError("the 'set_position' method must be overriden")
 
-    def run(self):
-        raise RuntimeError("the 'run' method must be overriden")
-
     def positioning(self):
         pass
 
@@ -88,6 +97,7 @@ class RobotBehavior:
         pass
 
     def start(self):
+        self.inGameAction.start()
         self.manager.start_time()
         self.stop_event.clear()
         LogManager().reset_time()
@@ -106,14 +116,14 @@ class RobotBehavior:
                         self.logger(INFO, 'Goto: ({0[0]:.0f}, {0[1]:.0f}, {0[2]:.2f})'.format(location))
                     else:
                         self.logger(INFO, 'Goto: ({0[0]:.0f}, {0[1]:.0f})'.format(location))
-                    goto = self.perform(self.goto_procedure, args=(location, thresholds))
-                    success = self.get(goto)
+                    self.goto = self.perform(self.goto_procedure, args=(location, thresholds))
+                    success = self.get(self.goto)
                 else:
                     success = True
                 if success:
                     self.logger(INFO, "Perform Action")
-                    action = self.perform(procedure, args=args, kwargs=kwargs)
-                    self.get(action)
+                    self.action = self.perform(procedure, args=args, kwargs=kwargs)
+                    self.get(self.action)
                 else:
                     self.logger(WARNING, 'Goto failed')
         except:
