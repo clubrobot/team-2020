@@ -45,17 +45,19 @@ class Bornibus(RobotBehavior):
         pass
 
     def set_position(self):
-        wheeledbase.set_position(*geogebra.get('StartYellow'), -pi/2)
+        self.wheeledbase.set_position(*geogebra.get('StartYellow'), -pi/2)
 
     def positioning(self):
         pass
 
+    def stop_procedure(self):
+        self.wheeledbase.stop()
 
 if __name__ == '__main__':
     if PREPARATION:
         Bornibus().start_preparation()
     else:
-        robot = Bornibus(manager)
+        robot = Bornibus(manager, timelimit=100)
         robot.set_side(COLOR)
         init_robot()
         robot.set_position()
