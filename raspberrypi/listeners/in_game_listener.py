@@ -7,12 +7,11 @@ from math import hypot
 
 from common.sync_flag_signal import Signal, Flag
 
-class EndGameListener(Thread):
+class InGameListener(Thread):
 
-    # End game actions
-    END_GAME_ACTION = 0
-    FUNNY_ACTION    = 1
-    HARBOUR_ACTION  = 2
+    # In game actions
+    FUNNY_ACTION    = 0
+    HARBOUR_ACTION  = 1
     # Add new end game action here
 
     def __init__(self, match_time = 100,  timestep = 0.1):
@@ -20,7 +19,7 @@ class EndGameListener(Thread):
         self.daemon = True
 
         # End Game action list
-        self.end_game_action_list = [self.END_GAME_ACTION, self.FUNNY_ACTION, self.HARBOUR_ACTION]
+        self.end_game_action_list = [self.FUNNY_ACTION, self.HARBOUR_ACTION]
 
         for action in self.end_game_action_list:
             self.__setattr__("signal"+str(action) , Signal())
@@ -52,12 +51,8 @@ class EndGameListener(Thread):
             sleep(self.timestep)
 
 if __name__ == "__main__":
-    endGame = EndGameListener()
+    inGame = InGameListener()
     start_time = monotonic()
-
-    def stop_match():
-        print(monotonic() - start_time)
-        print("stop !!")
 
     def funny():
         print(monotonic() - start_time)
@@ -67,10 +62,9 @@ if __name__ == "__main__":
         print(monotonic() - start_time)
         print("harbour !!")
 
-    endGame.bind(EndGameListener.END_GAME_ACTION, stop_match)
-    endGame.bind(EndGameListener.FUNNY_ACTION, funny, timeout=20)
-    endGame.bind(EndGameListener.HARBOUR_ACTION, harbour, timeout=65)
+    inGame.bind(InGameListener.FUNNY_ACTION, funny, timeout=20)
+    inGame.bind(InGameListener.HARBOUR_ACTION, harbour, timeout=65)
 
-    endGame.start()
+    inGame.start()
 
     input()
