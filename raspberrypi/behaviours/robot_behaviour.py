@@ -5,8 +5,7 @@ from time import monotonic, sleep
 from threading import Thread, Event, current_thread
 from logs.log_manager import *
 from listeners.end_game_listener import *
-
-class AccessDenied(Exception): pass
+from common.components import AccessDenied
 
 class RobotBehavior:
     BLUE_SIDE       = 0
@@ -16,19 +15,14 @@ class RobotBehavior:
     def __init__(self, manager, *args, timelimit=None, exec_param=Logger.SHOW, log_level=INFO, **kwargs):
         self.manager    = manager
         self.timelimit  = timelimit
-        self.whitelist  = set()
-        self.blacklist  = set()
         self.outputs    = dict()
         self.stop_event = Event()
 
-        # Keep old manager method
-        #self.manager_send = self.manager.send
-
-        # Override manager send method
-        #self.manager.send = self.send
-
         # Init Logger
         self.logger = LogManager().getlogger(self.__class__.__name__, exec_param, log_level)
+
+        # Set timelimit
+        self.manager.set_timelimit(self.timelimit)
 
     def perform(self, procedure, args=(), kwargs={}, timelimit=True):
         thread = Thread(args=args, kwargs=kwargs, daemon=True)
@@ -43,10 +37,10 @@ class RobotBehavior:
                 self.outputs[thread_id] = None
                 raise
             finally:
-                if thread_id in self.blacklist: self.blacklist.remove(thread_id)
-                if thread_id in self.whitelist: self.whitelist.remove(thread_id)
+                if thread_id in self.manager.blacklist: self.manager.blacklist.remove(thread_id)
+                if thread_id in self.manager.whitelist: self.manager.whitelist.remove(thread_id)
 
-        if not timelimit: self.whitelist.add(thread_id)
+        if not timelimit: self.manager.whitelist.add(thread_id)
         thread._target = target
         thread.start()
         return thread
@@ -54,7 +48,7 @@ class RobotBehavior:
     def interrupt(self, thread):
         if thread.is_alive():
             thread_id = id(thread)
-            self.blacklist.add(thread_id)
+            self.manager.blacklist.add(thread_id)
 
     def get(self, thread, timeout=None):
         thread.join(timeout=timeout)
@@ -64,18 +58,6 @@ class RobotBehavior:
         output = self.outputs[thread_id]
         del self.outputs[thread_id]
         return output
-
-    def send(self, *args, **kwargs):
-        thread_id = id(current_thread())
-        denyaccess = thread_id in self.blacklist
-        if not thread_id in self.whitelist:
-            if self.timelimit is not None:
-                denyaccess |= (self.get_elapsed_time() > self.timelimit)
-            denyaccess |= self.stop_event.is_set()
-        if denyaccess:
-            raise AccessDenied(thread_id)
-        else:
-            return self.manager(self, *args, **kwargs)
 
     def start_preparation(self):
         from managers.buttons_manager import ButtonsManager
@@ -106,12 +88,13 @@ class RobotBehavior:
         pass
 
     def start(self):
-        self.starttime = monotonic()
+        self.manager.start_time()
         self.stop_event.clear()
+        LogManager().reset_time()
         self.logger(INFO, 'Start Behaviour')
         try:
             start = self.perform(self.start_procedure, timelimit=False)
-            while (self.timelimit is None or self.get_elapsed_time() < self.timelimit) and not self.stop_event.is_set():
+            while (self.timelimit is None or self.manager.get_elapsed_time() < self.timelimit) and not self.stop_event.is_set():
                 decision = self.make_decision()
                 procedure, args, kwargs, (location, thresholds) = decision
                 if procedure is None:
@@ -134,23 +117,17 @@ class RobotBehavior:
                 else:
                     self.logger(WARNING, 'Goto failed')
         except:
-            self.whitelist.clear()
+            self.manager.whitelist.clear()
             raise
         finally:
             self.stop()
             self.get(start)
-            self.whitelist.add(id(current_thread()))
+            self.manager.whitelist.add(id(current_thread()))
 
     def stop(self):
         self.logger(INFO, 'Stop match')
         self.perform(self.stop_procedure, timelimit=False)
         self.stop_event.set()
-
-    def get_elapsed_time(self):
-        if hasattr(self, 'starttime'):
-            return monotonic() - self.starttime
-        else:
-            return 0
 
 
 if __name__ == "__main__":

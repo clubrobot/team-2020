@@ -24,6 +24,8 @@ UPDATE_MANAGER_PICAMERA_OPCODE = 0x30
 MAKE_MANAGER_REPLY_OPCODE = 0x40
 MAKE_MANAGER_EXECUTE_OPCODE = 0x50
 
+class AccessDenied(Exception): pass
+
 
 class Component():
 
@@ -242,6 +244,11 @@ class Manager(TCPTalks):
 
     def __init__(self, ip='localhost', port=COMPONENTS_SERVER_DEFAULT_PORT, password=None):
         TCPTalks.__init__(self, ip, port=port, password=password)
+
+        self.timelimit  = None
+        self.whitelist  = set()
+        self.blacklist  = set()
+
         # PiCamera components
         self.bind(UPDATE_MANAGER_PICAMERA_OPCODE, self.UPDATE_MANAGER_PICAMERA)
         self.picameras = {}
@@ -273,6 +280,29 @@ class Manager(TCPTalks):
     def end_game(self):
         self.send(END_GAME_OPCODE)
         self.disconnect()
+
+    def set_timelimit(self, timelimit):
+        self.timelimit = timelimit
+
+    def get_elapsed_time(self):
+        if hasattr(self, 'starttime'):
+            return time.monotonic() - self.starttime
+        else:
+            return 0
+
+    def start_time(self):
+        self.starttime = time.monotonic()
+
+    def send(self, *args, **kwargs):
+        thread_id = id(current_thread())
+        denyaccess = thread_id in self.blacklist
+        if not thread_id in self.whitelist:
+            if self.timelimit is not None:
+                denyaccess |= (self.get_elapsed_time() > self.timelimit)
+        if denyaccess:
+            raise AccessDenied(thread_id)
+        else:
+            return TCPTalks.send(self, *args, **kwargs)
 
 
 class Proxy:
