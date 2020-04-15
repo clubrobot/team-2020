@@ -11,7 +11,7 @@ COLOR = RobotBehavior.YELLO_SIDE
 PREPARATION = False
 
 class Bornibus(RobotBehavior):
-    def __init__(self, manager, *args, timelimit=None, **kwargs):
+    def __init__(self, *args, timelimit=None, **kwargs):
         RobotBehavior.__init__(self, manager, *args, timelimit=timelimit, **kwargs)
 
         self.avoidance_behaviour = AviodanceBehaviour(wheeledbase, roadmap, robot_beacon)
@@ -29,8 +29,8 @@ class Bornibus(RobotBehavior):
         if(self.automatestep < len(self.automate)):
             action = self.automate[self.automatestep]
         else:
-            return None, (self,), {}, (None, None)
             self.stop_event.set()
+            return None, (self,), {}, (None, None)
 
         return action.procedure, (self,), {}, (action.actionpoint + (action.orientation,), (action.actionpoint_precision, None))
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     if PREPARATION:
         Bornibus().start_preparation()
     else:
-        robot = Bornibus(manager, timelimit=100)
+        robot = Bornibus(timelimit=100)
         robot.set_side(COLOR)
         init_robot()
         robot.set_position()
